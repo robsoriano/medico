@@ -1,0 +1,7 @@
+# Python-specific ignores
+backend/venv/
+*.pyc
+__pycache__/
+
+# Node/React-specific ignores
+frontend/node_modules/
