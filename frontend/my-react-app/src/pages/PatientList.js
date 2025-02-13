@@ -6,6 +6,7 @@ const PatientList = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  console.log("PatientList re-rendering with patients:", patients);
 
   useEffect(() => {
     // Fetch patients on component mount
