@@ -1,25 +1,51 @@
 // src/pages/Patients.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PatientForm from '../components/PatientForm';
 import PatientList from '../pages/PatientList';
+import { getPatients } from '../services/patientService';
 
 const Patients = () => {
-  const [patientAdded, setPatientAdded] = useState(null);
+  // State for patients, loading status, and error message
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Optionally, trigger a refresh in PatientList when a patient is added.
-  // For simplicity, PatientList already fetches the patient list on mount.
+  // Function to fetch patients from the backend
+  const fetchPatients = async () => {
+    try {
+      const response = await getPatients();
+      setPatients(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch patients.');
+      setLoading(false);
+    }
+  };
 
-  const handlePatientAdded = (data) => {
-    // You could trigger a state update or simply log the new patient
-    console.log('New patient added:', data);
-    setPatientAdded(data); // This can be used to force a re-render or notify the user.
+  // Fetch patients on component mount
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  // Callback function to refresh the list after a new patient is added
+  const handlePatientAdded = (newPatient) => {
+    // Option 1: Re-fetch the entire list
+    fetchPatients();
+    // Option 2: Alternatively, update the state directly:
+    // setPatients([...patients, newPatient]);
   };
 
   return (
     <div style={{ padding: '1rem' }}>
       <h2>Patients</h2>
       <PatientForm onPatientAdded={handlePatientAdded} />
-      <PatientList />
+      {loading ? (
+        <p>Loading patients...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        <PatientList patients={patients} setPatients={setPatients} />
+      )}
     </div>
   );
 };

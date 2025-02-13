@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import re
+from flask_cors import CORS  # Import the extension
 
 app = Flask(__name__)
+
+# Enable CORS for all routes in the app
+CORS(app)
 
 # Configure PostgreSQL Database URI (Ensure your password is correct)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:2679@localhost/medical_crm_db'
