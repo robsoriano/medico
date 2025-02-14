@@ -20,6 +20,12 @@ export const getAuthToken = () => {
   return localStorage.getItem('token'); // Retrieve JWT token from storage
 };
 
+// ✅ Ensure `logout` function exists
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('refresh_token');
+};
+
 // ✅ Ensure `refreshToken` function exists
 export const refreshToken = async () => {
   try {
