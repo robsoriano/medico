@@ -1,24 +1,23 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Home from './pages/Home';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
 import Patients from './pages/Patients';
-import './App.css';
+import { getAuthToken } from './services/authService';
+
+const PrivateRoute = ({ element }) => {
+  return getAuthToken() ? element : <Navigate to="/login" />;
+};
 
 function App() {
   return (
-  <div>
-  <Header />
-  <main style={{ padding: '1rem' }}>
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/patients" element={<Patients />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/patients" element={<PrivateRoute element={<Patients />} />} />
+      <Route path="/" element={<Navigate to="/login" />} />
     </Routes>
-  </main>
-  <Footer />
-</div>
   );
 }
 
 export default App;
+
+

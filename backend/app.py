@@ -1,44 +1,95 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_cors import CORS
 import re
-from flask_cors import CORS  # Import the extension
+from models import db, User  # Import models from models.py
+from flask_jwt_extended import create_refresh_token, jwt_required, get_jwt_identity
+from datetime import timedelta
+from models import db, User, Patient  # Import Patient as well
+
 
 app = Flask(__name__)
 
-# Enable CORS for all routes in the app
-CORS(app)
+# Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
-# Configure PostgreSQL Database URI (Ensure your password is correct)
+# Configure Database & JWT
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:2679@localhost/medical_crm_db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable modification tracking for performance
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'  # Change this to a secure value
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)   # Access token valid for 1 hour
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)   # Refresh token valid for 7 days
 
-# Initialize the database
-db = SQLAlchemy(app)
-
-# Define the Patient model
-class Patient(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-
-    def __repr__(self):
-        return f'<Patient {self.name}>'
+# Initialize database and JWT
+db.init_app(app)
+jwt = JWTManager(app)
 
 # Ensure tables are created
 with app.app_context():
     db.create_all()
 
-# Helper function to validate email format using a simple regex
-def is_valid_email(email):
-    pattern = r'^\S+@\S+\.\S+$'
-    return re.match(pattern, email) is not None
-
 # ---------------------------
-# CRUD API Endpoints for Patients
+# User Authentication Routes
 # ---------------------------
 
-# Create a new patient
+# Register a new user
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({"error": "Username already exists"}), 400
+
+    new_user = User(username=username)
+    new_user.set_password(password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"message": "User registered successfully"}), 201
+
+# Login user and generate JWT token
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.check_password(password):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    access_token = create_access_token(identity=username)
+    refresh_token = create_refresh_token(identity=username)  # Generate refresh token
+    return jsonify({"access_token": access_token, "refresh_token": refresh_token}), 200
+
+@app.route('/api/refresh', methods=['POST'])
+@jwt_required(refresh=True)  # Requires a refresh token
+def refresh():
+    identity = get_jwt_identity()  # Get the user's identity from the refresh token
+    new_access_token = create_access_token(identity=identity)  # Generate a new access token
+    return jsonify({"access_token": new_access_token}), 200
+
+# Protected route example
+@app.route('/protected', methods=['GET'])
+@jwt_required()
+def protected():
+    current_user = get_jwt_identity()
+    return jsonify({"message": f"Hello, {current_user}! This is a protected route."})
+
+# ---------------------------
+# CRUD API Endpoints for Patients (Now Protected)
+# ---------------------------
+
+# Create a new patient (Requires Authentication)
 @app.route('/api/patients', methods=['POST'])
+@jwt_required()
 def add_patient():
     data = request.get_json()
     if not data:
@@ -58,18 +109,23 @@ def add_patient():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# Retrieve all patients
+# Retrieve all patients (Requires Authentication)
 @app.route('/api/patients', methods=['GET'])
+@jwt_required()
 def get_patients():
     try:
+        print("Fetching patients...")
         patients = Patient.query.all()
         patient_list = [{'id': p.id, 'name': p.name, 'email': p.email} for p in patients]
+        print("Patients retrieved successfully:", patient_list)
         return jsonify(patient_list), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print("Error in get_patients:", str(e))
+        return jsonify({'error': 'Internal Server Error', 'details': str(e)}), 500
 
-# Retrieve a specific patient by ID
+# Retrieve a specific patient by ID (Requires Authentication)
 @app.route('/api/patients/<int:patient_id>', methods=['GET'])
+@jwt_required()
 def get_patient(patient_id):
     try:
         patient = Patient.query.get(patient_id)
@@ -79,8 +135,9 @@ def get_patient(patient_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Update a patient
+# Update a patient (Requires Authentication)
 @app.route('/api/patients/<int:patient_id>', methods=['PUT'])
+@jwt_required()
 def update_patient(patient_id):
     data = request.get_json()
     if not data:
@@ -89,12 +146,10 @@ def update_patient(patient_id):
         patient = Patient.query.get(patient_id)
         if not patient:
             return jsonify({'error': 'Patient not found'}), 404
-        # Validate and update name if provided
         if 'name' in data:
             if not isinstance(data['name'], str) or not data['name'].strip():
                 return jsonify({'error': 'Name must be a non-empty string'}), 400
             patient.name = data['name'].strip()
-        # Validate and update email if provided
         if 'email' in data:
             if not isinstance(data['email'], str) or not is_valid_email(data['email']):
                 return jsonify({'error': 'Invalid email format'}), 400
@@ -105,8 +160,9 @@ def update_patient(patient_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# Delete a patient
+# Delete a patient (Requires Authentication)
 @app.route('/api/patients/<int:patient_id>', methods=['DELETE'])
+@jwt_required()
 def delete_patient(patient_id):
     try:
         patient = Patient.query.get(patient_id)
@@ -122,7 +178,7 @@ def delete_patient(patient_id):
 # A simple home route
 @app.route('/')
 def home():
-    return "Hello, Medical CRM MVP with PostgreSQL!"
+    return "Hello, Medical CRM MVP with PostgreSQL and Authentication!"
 
 if __name__ == '__main__':
     app.run(debug=True)
