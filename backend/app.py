@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
+from flask_migrate import Migrate  
 import re
 from models import db, User  # Import models from models.py
 from flask_jwt_extended import create_refresh_token, jwt_required, get_jwt_identity
@@ -24,6 +25,7 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)   # Refresh token va
 # Initialize database and JWT
 db.init_app(app)
 jwt = JWTManager(app)
+migrate = Migrate(app, db)  # Initialize Flask-Migrate
 
 # Ensure tables are created
 with app.app_context():
@@ -39,6 +41,7 @@ def register():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+    role = data.get('role', 'secretary')  # Default to 'secretary' if role isn't provided
 
     if not username or not password:
         return jsonify({"error": "Username and password are required"}), 400
@@ -139,13 +142,22 @@ def get_patient(patient_id):
 @app.route('/api/patients/<int:patient_id>', methods=['PUT'])
 @jwt_required()
 def update_patient(patient_id):
+    current_user = get_jwt_identity()  # This returns the username as set in the token
+
+    # Retrieve the user and check their role
+    user = User.query.filter_by(username=current_user).first()
+    if not user or user.role != 'doctor':
+        return jsonify({"error": "Permission denied"}), 403
+
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Request must be JSON'}), 400
+
     try:
         patient = Patient.query.get(patient_id)
         if not patient:
             return jsonify({'error': 'Patient not found'}), 404
+
         if 'name' in data:
             if not isinstance(data['name'], str) or not data['name'].strip():
                 return jsonify({'error': 'Name must be a non-empty string'}), 400
@@ -154,6 +166,7 @@ def update_patient(patient_id):
             if not isinstance(data['email'], str) or not is_valid_email(data['email']):
                 return jsonify({'error': 'Invalid email format'}), 400
             patient.email = data['email'].strip()
+
         db.session.commit()
         return jsonify({'message': 'Patient updated successfully'}), 200
     except Exception as e:
