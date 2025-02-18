@@ -1,6 +1,7 @@
+// src/App.js
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header';  // Import Header
+import Header from './components/Header';
 import Login from './pages/Login';
 import Patients from './pages/Patients';
 import { getAuthToken } from './services/authService';
@@ -12,16 +13,15 @@ const PrivateRoute = ({ element }) => {
 function App() {
   return (
     <>
-      <Header /> {/* Now Header is rendered on all pages */}
+      <Header />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/patients" element={<PrivateRoute element={<Patients />} />} />
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to="/patients" />} />
       </Routes>
     </>
   );
 }
 
 export default App;
-
 

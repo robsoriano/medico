@@ -1,18 +1,18 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import (
+    JWTManager, create_access_token, create_refresh_token,
+    jwt_required, get_jwt_identity
+)
 from flask_cors import CORS
 from flask_migrate import Migrate  
 import re
-from models import db, User  # Import models from models.py
-from flask_jwt_extended import create_refresh_token, jwt_required, get_jwt_identity
 from datetime import timedelta
-from models import db, User, Patient  # Import Patient as well
-
+from models import db, User, Patient  # Import all needed models
 
 app = Flask(__name__)
 
-# Enable CORS for all routes
+# Enable CORS for all routes from http://localhost:3000
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # Configure Database & JWT
@@ -20,12 +20,17 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:2679@localhost/me
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'  # Change this to a secure value
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)   # Access token valid for 1 hour
-app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)   # Refresh token valid for 7 days
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)     # Refresh token valid for 7 days
 
-# Initialize database and JWT
+# Initialize database, JWT, and Flask-Migrate
 db.init_app(app)
 jwt = JWTManager(app)
-migrate = Migrate(app, db)  # Initialize Flask-Migrate
+migrate = Migrate(app, db)
+
+# Helper function to validate email format
+def is_valid_email(email):
+    pattern = r'^\S+@\S+\.\S+$'
+    return re.match(pattern, email) is not None
 
 # Ensure tables are created
 with app.app_context():
@@ -50,7 +55,7 @@ def register():
     if existing_user:
         return jsonify({"error": "Username already exists"}), 400
 
-    new_user = User(username=username)
+    new_user = User(username=username, role=role)  # Set role during registration
     new_user.set_password(password)
     db.session.add(new_user)
     db.session.commit()
@@ -68,7 +73,9 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    access_token = create_access_token(identity=username)
+    # Include the user's role in the token's additional claims
+    additional_claims = {"role": user.role}
+    access_token = create_access_token(identity=username, additional_claims=additional_claims)
     refresh_token = create_refresh_token(identity=username)  # Generate refresh token
     return jsonify({"access_token": access_token, "refresh_token": refresh_token}), 200
 
