@@ -7,13 +7,31 @@ import { getPatients, addPatient } from '../services/patientService';
 const PatientsPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [patients, setPatients] = useState([]);
+  const [filteredPatients, setFilteredPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [searchQuery, setSearchQuery] = useState('');
 
+  // Fetch patients from backend on component mount
   useEffect(() => {
     fetchPatients();
   }, []);
+
+  // Filter patients whenever patients or searchQuery changes
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredPatients(patients);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = patients.filter(
+        (patient) =>
+          patient.name.toLowerCase().includes(query) ||
+          patient.email.toLowerCase().includes(query)
+      );
+      setFilteredPatients(filtered);
+    }
+  }, [searchQuery, patients]);
 
   const fetchPatients = async () => {
     setLoading(true);
@@ -42,10 +60,11 @@ const PatientsPage = () => {
     setError('');
     try {
       const response = await addPatient(formData);
-      // Update the patient list with the new patient
+      // Update the patients list with the new patient
       setPatients([...patients, response.data]);
+      // Clear the form and switch back to the list view
       setFormData({ name: '', email: '', phone: '' });
-      setTabValue(0); // Switch back to the list view
+      setTabValue(0);
     } catch (err) {
       console.error(err);
       setError('Failed to add patient.');
@@ -61,12 +80,20 @@ const PatientsPage = () => {
       <Box sx={{ mt: 2 }}>
         {tabValue === 0 && (
           <>
+            <TextField
+              label="Search Patients"
+              variant="outlined"
+              fullWidth
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{ mb: 2 }}
+            />
             {loading ? (
               <Typography>Loading patients...</Typography>
             ) : error ? (
               <Typography color="error">{error}</Typography>
             ) : (
-              <PatientList patients={patients} setPatients={setPatients} />
+              <PatientList patients={filteredPatients} setPatients={setPatients} />
             )}
           </>
         )}

@@ -9,3 +9,7 @@ export const addPatient = (patientData) => API.post('/patients', patientData);
 export const updatePatient = (id, patientData) => API.put(`/patients/${id}`, patientData);
 
 export const deletePatient = (id) => API.delete(`/patients/${id}`);
+
+export const getPatient = (id) => {
+    return API.get(`/patients/${id}`); }
+    

@@ -7,6 +7,7 @@ import Login from "./pages/Login"; // Use your login page from pages
 import Dashboard from "./pages/Dashboard"; // Dashboard from pages
 import PatientsPage from "./pages/PatientsPage"; // Integrated Patients page from pages
 import { getAuthToken } from "./services/authService";
+import PatientDetail from "./pages/PatientDetail";
 
 // Create a Material-UI theme
 const theme = createTheme({
@@ -33,6 +34,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
         <Route path="/patients" element={<PrivateRoute element={<PatientsPage />} />} />
+        <Route path="/patients/:id" element={<PrivateRoute element={<PatientDetail />} />} />
         <Route path="/" element={<Navigate to="/dashboard" />} />
       </Routes>
     </ThemeProvider>

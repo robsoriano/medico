@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { deletePatient, updatePatient } from '../services/patientService';
 import { getUserRole } from '../services/tokenService';
+import { Link } from 'react-router-dom';
 
 const PatientList = ({ patients, setPatients }) => {
   const [editingId, setEditingId] = useState(null);
@@ -83,6 +84,9 @@ const PatientList = ({ patients, setPatients }) => {
                       </button>
                     </>
                   )}
+                  <Link to={`/patients/${patient.id}`} style={{ marginLeft: '0.5rem', textDecoration: 'none' }}>
+                    <button>View</button>
+                  </Link>
                 </>
               )}
             </li>
