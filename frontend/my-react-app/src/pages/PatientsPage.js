@@ -1,6 +1,6 @@
 // src/pages/PatientsPage.js
 import React, { useState, useEffect } from 'react';
-import { Container, Tabs, Tab, Box, Paper, Typography, TextField, Button } from '@mui/material';
+import { Container, Tabs, Tab, Box, Paper, Typography, TextField, Button, Snackbar } from '@mui/material';
 import PatientList from '../pages/PatientList';
 import { getPatients, addPatient } from '../services/patientService';
 
@@ -12,13 +12,15 @@ const PatientsPage = () => {
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  // Fetch patients from backend on component mount
+  // Fetch patients on mount
   useEffect(() => {
     fetchPatients();
   }, []);
 
-  // Filter patients whenever patients or searchQuery changes
+  // Filter patients based on search query
   useEffect(() => {
     if (!searchQuery) {
       setFilteredPatients(patients);
@@ -37,7 +39,7 @@ const PatientsPage = () => {
     setLoading(true);
     try {
       const response = await getPatients();
-      setPatients([...response.data]); // Force a new array instance
+      setPatients([...response.data]);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching patients:", err);
@@ -60,15 +62,20 @@ const PatientsPage = () => {
     setError('');
     try {
       const response = await addPatient(formData);
-      // Update the patients list with the new patient
       setPatients([...patients, response.data]);
-      // Clear the form and switch back to the list view
       setFormData({ name: '', email: '', phone: '' });
       setTabValue(0);
+      // Show success notification
+      setSnackbarMessage("Patient added successfully!");
+      setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
       setError('Failed to add patient.');
     }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -142,6 +149,12 @@ const PatientsPage = () => {
           </Paper>
         )}
       </Box>
+      <Snackbar
+        open={snackbarOpen}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+        autoHideDuration={3000}
+      />
     </Container>
   );
 };
