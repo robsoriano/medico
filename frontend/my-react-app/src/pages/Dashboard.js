@@ -16,7 +16,7 @@ const Dashboard = () => {
     <Box sx={{ display: "flex" }}>
       <AppBar position="absolute">
         <Toolbar>
-          <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Medical CRM
           </Typography>
           <Button color="inherit" onClick={handleLogout}>
@@ -51,6 +51,9 @@ const Dashboard = () => {
                 </Typography>
                 <Button variant="contained" component={Link} to="/patients" sx={{ mt: 2 }}>
                   Manage Patients
+                </Button>
+                <Button variant="contained" component={Link} to="/appointments" sx={{ mt: 2 }}>
+                  Manage Appointments
                 </Button>
               </Paper>
             </Grid>

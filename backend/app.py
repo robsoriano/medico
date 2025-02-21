@@ -8,7 +8,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate  
 import re
 from datetime import timedelta
-from models import db, User, Patient  # Import all needed models
+from models import db, User, Patient, Appointment  # Make sure Appointment is imported from models
 
 app = Flask(__name__)
 
@@ -39,8 +39,6 @@ with app.app_context():
 # ---------------------------
 # User Authentication Routes
 # ---------------------------
-
-# Register a new user
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -62,7 +60,6 @@ def register():
 
     return jsonify({"message": "User registered successfully"}), 201
 
-# Login user and generate JWT token
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -76,17 +73,16 @@ def login():
     # Include the user's role in the token's additional claims
     additional_claims = {"role": user.role}
     access_token = create_access_token(identity=username, additional_claims=additional_claims)
-    refresh_token = create_refresh_token(identity=username)  # Generate refresh token
+    refresh_token = create_refresh_token(identity=username)
     return jsonify({"access_token": access_token, "refresh_token": refresh_token}), 200
 
 @app.route('/api/refresh', methods=['POST'])
-@jwt_required(refresh=True)  # Requires a refresh token
+@jwt_required(refresh=True)
 def refresh():
-    identity = get_jwt_identity()  # Get the user's identity from the refresh token
-    new_access_token = create_access_token(identity=identity)  # Generate a new access token
+    identity = get_jwt_identity()
+    new_access_token = create_access_token(identity=identity)
     return jsonify({"access_token": new_access_token}), 200
 
-# Protected route example
 @app.route('/protected', methods=['GET'])
 @jwt_required()
 def protected():
@@ -96,8 +92,6 @@ def protected():
 # ---------------------------
 # CRUD API Endpoints for Patients (Now Protected)
 # ---------------------------
-
-# Create a new patient (Requires Authentication)
 @app.route('/api/patients', methods=['POST'])
 @jwt_required()
 def add_patient():
@@ -119,7 +113,6 @@ def add_patient():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# Retrieve all patients (Requires Authentication)
 @app.route('/api/patients', methods=['GET'])
 @jwt_required()
 def get_patients():
@@ -133,7 +126,6 @@ def get_patients():
         print("Error in get_patients:", str(e))
         return jsonify({'error': 'Internal Server Error', 'details': str(e)}), 500
 
-# Retrieve a specific patient by ID (Requires Authentication)
 @app.route('/api/patients/<int:patient_id>', methods=['GET'])
 @jwt_required()
 def get_patient(patient_id):
@@ -145,13 +137,10 @@ def get_patient(patient_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Update a patient (Requires Authentication)
 @app.route('/api/patients/<int:patient_id>', methods=['PUT'])
 @jwt_required()
 def update_patient(patient_id):
-    current_user = get_jwt_identity()  # This returns the username as set in the token
-
-    # Retrieve the user and check their role
+    current_user = get_jwt_identity()
     user = User.query.filter_by(username=current_user).first()
     if not user or user.role != 'doctor':
         return jsonify({"error": "Permission denied"}), 403
@@ -180,7 +169,6 @@ def update_patient(patient_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# Delete a patient (Requires Authentication)
 @app.route('/api/patients/<int:patient_id>', methods=['DELETE'])
 @jwt_required()
 def delete_patient(patient_id):
@@ -191,6 +179,111 @@ def delete_patient(patient_id):
         db.session.delete(patient)
         db.session.commit()
         return jsonify({'message': 'Patient deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# ---------------------------
+# CRUD API Endpoints for Appointments (Now Protected)
+# ---------------------------
+@app.route('/api/appointments', methods=['POST'])
+@jwt_required()
+def add_appointment():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Request must be JSON'}), 400
+
+    patient_id = data.get('patient_id')
+    appointment_date = data.get('appointment_date')  # Expect "YYYY-MM-DD"
+    appointment_time = data.get('appointment_time')  # Expect "HH:MM:SS"
+    doctor = data.get('doctor')
+
+    if not patient_id or not appointment_date or not appointment_time or not doctor:
+        return jsonify({'error': 'Missing required fields: patient_id, appointment_date, appointment_time, doctor'}), 400
+
+    try:
+        new_appointment = Appointment(
+            patient_id=patient_id,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+            doctor=doctor
+        )
+        db.session.add(new_appointment)
+        db.session.commit()
+        return jsonify({'message': 'Appointment added successfully', 'id': new_appointment.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/appointments', methods=['GET'])
+@jwt_required()
+def get_appointments():
+    try:
+        appointments = Appointment.query.all()
+        appointment_list = [{
+            'id': a.id,
+            'patient_id': a.patient_id,
+            'appointment_date': a.appointment_date.isoformat(),
+            'appointment_time': a.appointment_time.isoformat(),
+            'doctor': a.doctor
+        } for a in appointments]
+        return jsonify(appointment_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/appointments/<int:appointment_id>', methods=['GET'])
+@jwt_required()
+def get_appointment(appointment_id):
+    try:
+        appointment = Appointment.query.get(appointment_id)
+        if not appointment:
+            return jsonify({'error': 'Appointment not found'}), 404
+        return jsonify({
+            'id': appointment.id,
+            'patient_id': appointment.patient_id,
+            'appointment_date': appointment.appointment_date.isoformat(),
+            'appointment_time': appointment.appointment_time.isoformat(),
+            'doctor': appointment.doctor
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/appointments/<int:appointment_id>', methods=['PUT'])
+@jwt_required()
+def update_appointment(appointment_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Request must be JSON'}), 400
+    try:
+        appointment = Appointment.query.get(appointment_id)
+        if not appointment:
+            return jsonify({'error': 'Appointment not found'}), 404
+
+        if 'patient_id' in data:
+            appointment.patient_id = data['patient_id']
+        if 'appointment_date' in data:
+            appointment.appointment_date = data['appointment_date']
+        if 'appointment_time' in data:
+            appointment.appointment_time = data['appointment_time']
+        if 'doctor' in data:
+            appointment.doctor = data['doctor']
+
+        db.session.commit()
+        return jsonify({'message': 'Appointment updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/appointments/<int:appointment_id>', methods=['DELETE'])
+@jwt_required()
+def delete_appointment(appointment_id):
+    try:
+        appointment = Appointment.query.get(appointment_id)
+        if not appointment:
+            return jsonify({'error': 'Appointment not found'}), 404
+        db.session.delete(appointment)
+        db.session.commit()
+        return jsonify({'message': 'Appointment deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

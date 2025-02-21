@@ -22,5 +22,17 @@ class Patient(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
 
-    def __repr__(self):
+def __repr__(self):
         return f'<Patient {self.name}>'
+
+class Appointment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    appointment_date = db.Column(db.Date, nullable=False)
+    appointment_time = db.Column(db.Time, nullable=False)
+    doctor = db.Column(db.String(80), nullable=False)
+
+    patient = db.relationship('Patient', backref=db.backref('appointments', lazy=True))
+
+def __repr__(self):
+        return f'<Appointment {self.id} for patient {self.patient_id}>'
