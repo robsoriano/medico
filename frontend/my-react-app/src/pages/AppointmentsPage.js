@@ -1,6 +1,7 @@
-
+// src/pages/AppointmentsPage.js
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Paper, Box, TextField, Button, Tabs, Tab } from '@mui/material';
+import { Container, Tabs, Tab, Box, Typography, Paper } from '@mui/material';
+import AppointmentForm from '../components/AppointmentForm';
 import { getAppointments, addAppointment } from '../services/appointmentService';
 
 const AppointmentsPage = () => {
@@ -8,12 +9,6 @@ const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [formData, setFormData] = useState({
-    patient_id: '',
-    appointment_date: '',
-    appointment_time: '',
-    doctor: '',
-  });
 
   useEffect(() => {
     fetchAppointments();
@@ -37,22 +32,10 @@ const AppointmentsPage = () => {
     setError('');
   };
 
-  const handleFormChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+  const handleAppointmentSubmit = async (appointmentData) => {
     try {
-      const response = await addAppointment(formData);
+      const response = await addAppointment(appointmentData);
       setAppointments([...appointments, response.data]);
-      setFormData({
-        patient_id: '',
-        appointment_date: '',
-        appointment_time: '',
-        doctor: '',
-      });
       setTabValue(0);
     } catch (err) {
       console.error(err);
@@ -99,57 +82,7 @@ const AppointmentsPage = () => {
           </>
         )}
         {tabValue === 1 && (
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Add Appointment
-            </Typography>
-            <Box component="form" onSubmit={handleFormSubmit} noValidate>
-              <TextField
-                label="Patient ID"
-                name="patient_id"
-                value={formData.patient_id}
-                onChange={handleFormChange}
-                fullWidth
-                margin="normal"
-                required
-              />
-              <TextField
-                label="Appointment Date (YYYY-MM-DD)"
-                name="appointment_date"
-                value={formData.appointment_date}
-                onChange={handleFormChange}
-                fullWidth
-                margin="normal"
-                required
-              />
-              <TextField
-                label="Appointment Time (HH:MM:SS)"
-                name="appointment_time"
-                value={formData.appointment_time}
-                onChange={handleFormChange}
-                fullWidth
-                margin="normal"
-                required
-              />
-              <TextField
-                label="Doctor"
-                name="doctor"
-                value={formData.doctor}
-                onChange={handleFormChange}
-                fullWidth
-                margin="normal"
-                required
-              />
-              {error && (
-                <Typography color="error" variant="body2">
-                  {error}
-                </Typography>
-              )}
-              <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-                Save Appointment
-              </Button>
-            </Box>
-          </Paper>
+          <AppointmentForm onSubmit={handleAppointmentSubmit} />
         )}
       </Box>
     </Container>
@@ -157,3 +90,4 @@ const AppointmentsPage = () => {
 };
 
 export default AppointmentsPage;
+
