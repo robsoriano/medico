@@ -1,24 +1,48 @@
 // src/pages/AppointmentsPage.js
 import React, { useState, useEffect } from 'react';
-import { Container, Tabs, Tab, Box, Typography, Paper } from '@mui/material';
+import { Container, Tabs, Tab, Box, Typography, Paper, TextField, Button } from '@mui/material';
+import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import AppointmentForm from '../components/AppointmentForm';
 import { getAppointments, addAppointment } from '../services/appointmentService';
 
 const AppointmentsPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [appointments, setAppointments] = useState([]);
+  const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    patient_id: '',
+    appointment_date: '',
+    appointment_time: '',
+    doctor: '',
+  });
+  const [filterDate, setFilterDate] = useState(null);
 
+  // Fetch appointments on component mount
   useEffect(() => {
     fetchAppointments();
   }, []);
+
+  // Filter appointments based on the selected filterDate
+  useEffect(() => {
+    if (!filterDate) {
+      setFilteredAppointments(appointments);
+    } else {
+      const filterDateString = filterDate.toISOString().split('T')[0]; // YYYY-MM-DD
+      const filtered = appointments.filter(
+        (a) => a.appointment_date === filterDateString
+      );
+      setFilteredAppointments(filtered);
+    }
+  }, [filterDate, appointments]);
 
   const fetchAppointments = async () => {
     setLoading(true);
     try {
       const response = await getAppointments();
-      setAppointments([...response.data]);
+      setAppointments([...response.data]); // Force a new array instance
       setLoading(false);
     } catch (err) {
       console.error("Error fetching appointments:", err);
@@ -52,6 +76,14 @@ const AppointmentsPage = () => {
       <Box sx={{ mt: 2 }}>
         {tabValue === 0 && (
           <>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Filter by Date"
+                value={filterDate}
+                onChange={(newValue) => setFilterDate(newValue)}
+                renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
+              />
+            </LocalizationProvider>
             {loading ? (
               <Typography>Loading appointments...</Typography>
             ) : error ? (
@@ -61,7 +93,7 @@ const AppointmentsPage = () => {
                 <Typography variant="h6" gutterBottom>
                   Appointment List
                 </Typography>
-                {appointments.map((appointment) => (
+                {filteredAppointments.map((appointment) => (
                   <Box key={appointment.id} sx={{ mb: 2, borderBottom: '1px solid #ccc', pb: 1 }}>
                     <Typography>
                       <strong>Patient ID:</strong> {appointment.patient_id}
@@ -90,4 +122,3 @@ const AppointmentsPage = () => {
 };
 
 export default AppointmentsPage;
-
