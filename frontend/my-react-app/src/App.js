@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard"; // Dashboard from pages
 import PatientsPage from "./pages/PatientsPage"; // Integrated Patients page from pages
 import { getAuthToken } from "./services/authService";
 import PatientDetail from "./pages/PatientDetail";
+import PatientEdit from "./pages/PatientEdit"; // Newly created edit page
 import AppointmentsPage from "./pages/AppointmentsPage";  
 
 // Create a Material-UI theme
@@ -36,6 +37,7 @@ function App() {
         <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
         <Route path="/patients" element={<PrivateRoute element={<PatientsPage />} />} />
         <Route path="/patients/:id" element={<PrivateRoute element={<PatientDetail />} />} />
+        <Route path="/patients/:id/edit" element={<PrivateRoute element={<PatientEdit />} />} />
         <Route path="/appointments" element={<PrivateRoute element={<AppointmentsPage />} />} />
         <Route path="/" element={<Navigate to="/dashboard" />} />
       </Routes>

@@ -35,15 +35,32 @@ const PatientDetail = () => {
     <Container sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h4" gutterBottom>
-          {patient.name}
+          {patient.first_name} {patient.last_name}
         </Typography>
         <Typography variant="body1">
           <strong>Email:</strong> {patient.email}
         </Typography>
         <Typography variant="body1">
-          <strong>Phone:</strong> {patient.phone || "N/A"}
+          <strong>Age:</strong> {patient.age || "N/A"}
         </Typography>
-        {/* Add additional patient details as needed */}
+        <Typography variant="body1">
+          <strong>Birth Date:</strong> {patient.birth_date || "N/A"}
+        </Typography>
+        <Typography variant="body1">
+          <strong>Home Address:</strong> {patient.home_address || "N/A"}
+        </Typography>
+        <Typography variant="body1">
+          <strong>Home Phone:</strong> {patient.home_phone || "N/A"}
+        </Typography>
+        <Typography variant="body1">
+          <strong>Personal Phone:</strong> {patient.personal_phone || "N/A"}
+        </Typography>
+        <Typography variant="body1">
+          <strong>Occupation:</strong> {patient.occupation || "N/A"}
+        </Typography>
+        <Typography variant="body1">
+          <strong>Medical Insurance:</strong> {patient.medical_insurance || "N/A"}
+        </Typography>
         <Box sx={{ mt: 2 }}>
           <Button variant="contained" onClick={() => navigate("/patients")}>
             Back to Patient List
