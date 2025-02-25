@@ -1,7 +1,7 @@
 // src/pages/AppointmentsPage.js
 import React, { useState, useEffect } from 'react';
 import { Container, Tabs, Tab, Box, Typography, Paper, TextField, Button } from '@mui/material';
-import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import AppointmentForm from '../components/AppointmentForm';
 import { getAppointments, addAppointment } from '../services/appointmentService';
@@ -13,31 +13,40 @@ const AppointmentsPage = () => {
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [formData, setFormData] = useState({
-    patient_id: '',
-    appointment_date: '',
-    appointment_time: '',
-    doctor: '',
-  });
+  
+  // New filter states
   const [filterDate, setFilterDate] = useState(null);
+  const [filterDoctor, setFilterDoctor] = useState('');
+  const [filterPatient, setFilterPatient] = useState('');
 
   // Fetch appointments on component mount
   useEffect(() => {
     fetchAppointments();
   }, []);
 
-  // Filter appointments based on the selected filterDate
+  // Filter appointments based on selected filters
   useEffect(() => {
-    if (!filterDate) {
-      setFilteredAppointments(appointments);
-    } else {
+    let filtered = [...appointments];
+
+    if (filterDate) {
       const filterDateString = filterDate.toISOString().split('T')[0]; // YYYY-MM-DD
-      const filtered = appointments.filter(
-        (a) => a.appointment_date === filterDateString
-      );
-      setFilteredAppointments(filtered);
+      filtered = filtered.filter(a => a.appointment_date === filterDateString);
     }
-  }, [filterDate, appointments]);
+
+    if (filterDoctor.trim()) {
+      filtered = filtered.filter(a => 
+        a.doctor.toLowerCase().includes(filterDoctor.trim().toLowerCase())
+      );
+    }
+
+    if (filterPatient.trim()) {
+      filtered = filtered.filter(a => 
+        a.patient_id.toString().includes(filterPatient.trim())
+      );
+    }
+
+    setFilteredAppointments(filtered);
+  }, [filterDate, filterDoctor, filterPatient, appointments]);
 
   const fetchAppointments = async () => {
     setLoading(true);
@@ -89,6 +98,20 @@ const AppointmentsPage = () => {
                 renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
               />
             </LocalizationProvider>
+            <TextField
+              label="Filter by Doctor"
+              value={filterDoctor}
+              onChange={(e) => setFilterDoctor(e.target.value)}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Filter by Patient ID"
+              value={filterPatient}
+              onChange={(e) => setFilterPatient(e.target.value)}
+              fullWidth
+              margin="normal"
+            />
             {loading ? (
               <Typography>Loading appointments...</Typography>
             ) : error ? (

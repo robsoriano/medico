@@ -8,7 +8,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='secretary')  # Default role can be changed
- 
+
     def set_password(self, password):
         """Hashes the user's password before storing it"""
         self.password_hash = generate_password_hash(password)
@@ -19,11 +19,20 @@ class User(db.Model):
 
 class Patient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(50), nullable=False, server_default='')
+    last_name = db.Column(db.String(50), nullable=False, server_default='')
+    age = db.Column(db.Integer, nullable=True)
+    birth_date = db.Column(db.Date, nullable=True)
+    home_address = db.Column(db.String(200), nullable=True)
+    home_phone = db.Column(db.String(20), nullable=True)
+    personal_phone = db.Column(db.String(20), nullable=True)
+    occupation = db.Column(db.String(100), nullable=True)
+    medical_insurance = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
 
-def __repr__(self):
-        return f'<Patient {self.name}>'
+
+    def __repr__(self):
+        return f'<Patient {self.first_name} {self.last_name}>'
 
 class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -34,5 +43,5 @@ class Appointment(db.Model):
 
     patient = db.relationship('Patient', backref=db.backref('appointments', lazy=True))
 
-def __repr__(self):
+    def __repr__(self):
         return f'<Appointment {self.id} for patient {self.patient_id}>'

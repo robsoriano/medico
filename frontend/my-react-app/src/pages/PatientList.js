@@ -1,4 +1,4 @@
-// src/components/PatientList.js
+// src/pages/PatientList.js 
 import React, { useState } from 'react';
 import { deletePatient, updatePatient } from '../services/patientService';
 import { getUserRole } from '../services/tokenService';
@@ -6,7 +6,8 @@ import { Link } from 'react-router-dom';
 
 const PatientList = ({ patients, setPatients }) => {
   const [editingId, setEditingId] = useState(null);
-  const [editedName, setEditedName] = useState('');
+  const [editedFirstName, setEditedFirstName] = useState('');
+  const [editedLastName, setEditedLastName] = useState('');
   const [editedEmail, setEditedEmail] = useState('');
 
   // Get the current user's role from the JWT token
@@ -26,21 +27,32 @@ const PatientList = ({ patients, setPatients }) => {
 
   const startEditing = (patient) => {
     setEditingId(patient.id);
-    setEditedName(patient.name);
+    setEditedFirstName(patient.first_name);
+    setEditedLastName(patient.last_name);
     setEditedEmail(patient.email);
   };
 
   const cancelEditing = () => {
     setEditingId(null);
-    setEditedName('');
+    setEditedFirstName('');
+    setEditedLastName('');
     setEditedEmail('');
   };
 
   const handleUpdate = async (id) => {
     try {
-      await updatePatient(id, { name: editedName, email: editedEmail });
+      await updatePatient(id, { 
+        first_name: editedFirstName, 
+        last_name: editedLastName, 
+        email: editedEmail 
+      });
       setPatients(patients.map(patient => 
-        patient.id === id ? { ...patient, name: editedName, email: editedEmail } : patient
+        patient.id === id ? { 
+          ...patient, 
+          first_name: editedFirstName, 
+          last_name: editedLastName, 
+          email: editedEmail 
+        } : patient
       ));
       setEditingId(null);
     } catch (err) {
@@ -60,8 +72,15 @@ const PatientList = ({ patients, setPatients }) => {
                 <>
                   <input
                     type="text"
-                    value={editedName}
-                    onChange={(e) => setEditedName(e.target.value)}
+                    value={editedFirstName}
+                    onChange={(e) => setEditedFirstName(e.target.value)}
+                    placeholder="First Name"
+                  />
+                  <input
+                    type="text"
+                    value={editedLastName}
+                    onChange={(e) => setEditedLastName(e.target.value)}
+                    placeholder="Last Name"
                   />
                   <input
                     type="email"
@@ -73,7 +92,7 @@ const PatientList = ({ patients, setPatients }) => {
                 </>
               ) : (
                 <>
-                  {patient.name} ({patient.email})
+                  {patient.first_name} {patient.last_name} ({patient.email})
                   {allowedRoles.includes(role) && (
                     <>
                       <button onClick={() => startEditing(patient)} style={{ marginLeft: '1rem' }}>

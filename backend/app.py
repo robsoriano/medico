@@ -7,7 +7,7 @@ from flask_jwt_extended import (
 from flask_cors import CORS
 from flask_migrate import Migrate  
 import re
-from datetime import timedelta
+from datetime import timedelta, datetime
 from models import db, User, Patient, Appointment  # Make sure Appointment is imported from models
 
 app = Flask(__name__)
@@ -98,14 +98,36 @@ def add_patient():
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Request must be JSON'}), 400
-    if 'name' not in data or 'email' not in data:
-        return jsonify({'error': 'Missing required fields: name, email'}), 400
-    if not isinstance(data['name'], str) or not data['name'].strip():
-        return jsonify({'error': 'Name must be a non-empty string'}), 400
+    # Validate required fields: first_name, last_name, and email are required now.
+    if 'first_name' not in data or 'last_name' not in data or 'email' not in data:
+        return jsonify({'error': 'Missing required fields: first_name, last_name, email'}), 400
+    if not isinstance(data['first_name'], str) or not data['first_name'].strip():
+        return jsonify({'error': 'First name must be a non-empty string'}), 400
+    if not isinstance(data['last_name'], str) or not data['last_name'].strip():
+        return jsonify({'error': 'Last name must be a non-empty string'}), 400
     if not isinstance(data['email'], str) or not is_valid_email(data['email']):
         return jsonify({'error': 'Invalid email format'}), 400
     try:
-        new_patient = Patient(name=data['name'].strip(), email=data['email'].strip())
+        # Convert birth_date string to date object if provided
+        birth_date = data.get('birth_date')
+        if birth_date:
+            try:
+                birth_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({'error': 'Invalid birth_date format. Expected YYYY-MM-DD.'}), 400
+
+        new_patient = Patient(
+            first_name=data['first_name'].strip(),
+            last_name=data['last_name'].strip(),
+            email=data['email'].strip(),
+            age=data.get('age'),
+            birth_date=birth_date,
+            home_address=data.get('home_address'),
+            home_phone=data.get('home_phone'),
+            personal_phone=data.get('personal_phone'),
+            occupation=data.get('occupation'),
+            medical_insurance=data.get('medical_insurance')
+        )
         db.session.add(new_patient)
         db.session.commit()
         return jsonify({'message': 'Patient added successfully', 'id': new_patient.id}), 201
@@ -119,7 +141,19 @@ def get_patients():
     try:
         print("Fetching patients...")
         patients = Patient.query.all()
-        patient_list = [{'id': p.id, 'name': p.name, 'email': p.email} for p in patients]
+        patient_list = [{
+            'id': p.id,
+            'first_name': p.first_name,
+            'last_name': p.last_name,
+            'email': p.email,
+            'age': p.age,
+            'birth_date': p.birth_date.isoformat() if p.birth_date else None,
+            'home_address': p.home_address,
+            'home_phone': p.home_phone,
+            'personal_phone': p.personal_phone,
+            'occupation': p.occupation,
+            'medical_insurance': p.medical_insurance
+        } for p in patients]
         print("Patients retrieved successfully:", patient_list)
         return jsonify(patient_list), 200
     except Exception as e:
@@ -133,7 +167,19 @@ def get_patient(patient_id):
         patient = Patient.query.get(patient_id)
         if not patient:
             return jsonify({'error': 'Patient not found'}), 404
-        return jsonify({'id': patient.id, 'name': patient.name, 'email': patient.email}), 200
+        return jsonify({
+            'id': patient.id,
+            'first_name': patient.first_name,
+            'last_name': patient.last_name,
+            'email': patient.email,
+            'age': patient.age,
+            'birth_date': patient.birth_date.isoformat() if patient.birth_date else None,
+            'home_address': patient.home_address,
+            'home_phone': patient.home_phone,
+            'personal_phone': patient.personal_phone,
+            'occupation': patient.occupation,
+            'medical_insurance': patient.medical_insurance
+        }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -154,14 +200,41 @@ def update_patient(patient_id):
         if not patient:
             return jsonify({'error': 'Patient not found'}), 404
 
-        if 'name' in data:
-            if not isinstance(data['name'], str) or not data['name'].strip():
-                return jsonify({'error': 'Name must be a non-empty string'}), 400
-            patient.name = data['name'].strip()
+        # Allow updating first_name, last_name, email, and optionally other fields.
+        if 'first_name' in data:
+            if not isinstance(data['first_name'], str) or not data['first_name'].strip():
+                return jsonify({'error': 'First name must be a non-empty string'}), 400
+            patient.first_name = data['first_name'].strip()
+        if 'last_name' in data:
+            if not isinstance(data['last_name'], str) or not data['last_name'].strip():
+                return jsonify({'error': 'Last name must be a non-empty string'}), 400
+            patient.last_name = data['last_name'].strip()
         if 'email' in data:
             if not isinstance(data['email'], str) or not is_valid_email(data['email']):
                 return jsonify({'error': 'Invalid email format'}), 400
             patient.email = data['email'].strip()
+        # Optionally update other fields without strict validation
+        if 'age' in data:
+            patient.age = data['age']
+        if 'birth_date' in data:
+            birth_date = data.get('birth_date')
+            if birth_date:
+                try:
+                    patient.birth_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
+                except ValueError:
+                    return jsonify({'error': 'Invalid birth_date format. Expected YYYY-MM-DD.'}), 400
+            else:
+                patient.birth_date = None
+        if 'home_address' in data:
+            patient.home_address = data['home_address']
+        if 'home_phone' in data:
+            patient.home_phone = data['home_phone']
+        if 'personal_phone' in data:
+            patient.personal_phone = data['personal_phone']
+        if 'occupation' in data:
+            patient.occupation = data['occupation']
+        if 'medical_insurance' in data:
+            patient.medical_insurance = data['medical_insurance']
 
         db.session.commit()
         return jsonify({'message': 'Patient updated successfully'}), 200
