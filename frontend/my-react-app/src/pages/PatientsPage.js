@@ -1,6 +1,7 @@
 // src/pages/PatientsPage.js
 import React, { useState, useEffect } from 'react';
-import { Container, Tabs, Tab, Box, Paper, Typography, TextField, Button, Snackbar } from '@mui/material';
+import { Container, Tabs, Tab, Box, Typography, Paper, TextField, Button } from '@mui/material';
+import { Link } from 'react-router-dom';
 import PatientList from '../pages/PatientList';
 import { getPatients, addPatient } from '../services/patientService';
 
@@ -12,10 +13,8 @@ const PatientsPage = () => {
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [searchQuery, setSearchQuery] = useState('');
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  // Fetch patients on mount
+  // Fetch patients on component mount
   useEffect(() => {
     fetchPatients();
   }, []);
@@ -39,7 +38,7 @@ const PatientsPage = () => {
     setLoading(true);
     try {
       const response = await getPatients();
-      setPatients([...response.data]);
+      setPatients([...response.data]); // Force a new array instance
       setLoading(false);
     } catch (err) {
       console.error("Error fetching patients:", err);
@@ -62,24 +61,23 @@ const PatientsPage = () => {
     setError('');
     try {
       const response = await addPatient(formData);
+      // Update the patients list with the new patient
       setPatients([...patients, response.data]);
+      // Clear the form and switch back to the list view
       setFormData({ name: '', email: '', phone: '' });
       setTabValue(0);
-      // Show success notification
-      setSnackbarMessage("Patient added successfully!");
-      setSnackbarOpen(true);
     } catch (err) {
       console.error(err);
       setError('Failed to add patient.');
     }
   };
 
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
-
   return (
     <Container sx={{ mt: 4, mb: 4 }}>
+      {/* Back to Dashboard Button */}
+      <Button variant="outlined" component={Link} to="/dashboard" sx={{ mb: 2 }}>
+        Back to Dashboard
+      </Button>
       <Tabs value={tabValue} onChange={handleTabChange} aria-label="Patient management tabs">
         <Tab label="Patient List" />
         <Tab label="Add Patient" />
@@ -149,12 +147,6 @@ const PatientsPage = () => {
           </Paper>
         )}
       </Box>
-      <Snackbar
-        open={snackbarOpen}
-        onClose={handleSnackbarClose}
-        message={snackbarMessage}
-        autoHideDuration={3000}
-      />
     </Container>
   );
 };

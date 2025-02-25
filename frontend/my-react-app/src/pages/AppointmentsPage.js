@@ -5,6 +5,7 @@ import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-picker
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import AppointmentForm from '../components/AppointmentForm';
 import { getAppointments, addAppointment } from '../services/appointmentService';
+import { Link } from 'react-router-dom';
 
 const AppointmentsPage = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -69,6 +70,10 @@ const AppointmentsPage = () => {
 
   return (
     <Container sx={{ mt: 4, mb: 4 }}>
+      {/* Back to Dashboard Button */}
+      <Button variant="outlined" component={Link} to="/dashboard" sx={{ mb: 2 }}>
+        Back to Dashboard
+      </Button>
       <Tabs value={tabValue} onChange={handleTabChange} aria-label="Appointment management tabs">
         <Tab label="Appointment List" />
         <Tab label="Add Appointment" />
