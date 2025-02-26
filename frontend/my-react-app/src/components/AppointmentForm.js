@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { Paper, Typography, Box, TextField, Button } from '@mui/material';
 import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-
-
+import { useNotification } from '../context/NotificationContext';
 
 const AppointmentForm = ({ onSubmit }) => {
   const [patientId, setPatientId] = useState('');
@@ -12,23 +11,41 @@ const AppointmentForm = ({ onSubmit }) => {
   const [appointmentTime, setAppointmentTime] = useState(null);
   const [doctor, setDoctor] = useState('');
   const [error, setError] = useState('');
+  const { showNotification } = useNotification();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
     if (!patientId || !appointmentDate || !appointmentTime || !doctor) {
       setError('All fields are required.');
+      showNotification('All fields are required.', 'error');
       return;
     }
     // Format date and time for the backend
     const formattedDate = appointmentDate.toISOString().split('T')[0]; // YYYY-MM-DD
     const formattedTime = appointmentTime.toTimeString().split(' ')[0]; // HH:MM:SS
-    onSubmit({
+
+    const payload = {
       patient_id: patientId,
       appointment_date: formattedDate,
       appointment_time: formattedTime,
       doctor,
-    });
+    };
+
+    try {
+      onSubmit(payload);
+      showNotification('Appointment added successfully!', 'success');
+      // Reset form state
+      setPatientId('');
+      setAppointmentDate(null);
+      setAppointmentTime(null);
+      setDoctor('');
+      setError('');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to add appointment.');
+      showNotification('Failed to add appointment.', 'error');
+    }
   };
 
   return (

@@ -98,7 +98,7 @@ def add_patient():
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Request must be JSON'}), 400
-    # Validate required fields: first_name, last_name, and email are required now.
+    # Validate required fields: first_name, last_name, and email are required.
     if 'first_name' not in data or 'last_name' not in data or 'email' not in data:
         return jsonify({'error': 'Missing required fields: first_name, last_name, email'}), 400
     if not isinstance(data['first_name'], str) or not data['first_name'].strip():
@@ -130,10 +130,24 @@ def add_patient():
         )
         db.session.add(new_patient)
         db.session.commit()
-        return jsonify({'message': 'Patient added successfully', 'id': new_patient.id}), 201
+        return jsonify({
+            'id': new_patient.id,
+            'first_name': new_patient.first_name,
+            'last_name': new_patient.last_name,
+            'email': new_patient.email,
+            'age': new_patient.age,
+            'birth_date': new_patient.birth_date.isoformat() if new_patient.birth_date else None,
+            'home_address': new_patient.home_address,
+            'home_phone': new_patient.home_phone,
+            'personal_phone': new_patient.personal_phone,
+            'occupation': new_patient.occupation,
+            'medical_insurance': new_patient.medical_insurance
+        }), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
 
 @app.route('/api/patients', methods=['GET'])
 @jwt_required()
