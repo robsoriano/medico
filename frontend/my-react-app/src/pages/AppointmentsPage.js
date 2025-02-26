@@ -15,17 +15,21 @@ const AppointmentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // New filter states
+  // Existing filter states for Appointment List tab
   const [filterDate, setFilterDate] = useState(null);
   const [filterDoctor, setFilterDoctor] = useState('');
   const [filterPatient, setFilterPatient] = useState('');
+  
+  // New state for Daily Queue tab
+  const [dailyQueueDate, setDailyQueueDate] = useState(null);
+  const [dailyQueueAppointments, setDailyQueueAppointments] = useState([]);
 
   // Fetch appointments on component mount
   useEffect(() => {
     fetchAppointments();
   }, []);
 
-  // Filter appointments based on selected filters
+  // Filter appointments for Appointment List tab
   useEffect(() => {
     let filtered = [...appointments];
 
@@ -48,6 +52,17 @@ const AppointmentsPage = () => {
 
     setFilteredAppointments(filtered);
   }, [filterDate, filterDoctor, filterPatient, appointments]);
+
+  // Filter appointments for Daily Queue tab when dailyQueueDate changes or appointments update
+  useEffect(() => {
+    if (dailyQueueDate) {
+      const queueDateString = dailyQueueDate.toISOString().split('T')[0];
+      const dailyAppointments = appointments.filter(a => a.appointment_date === queueDateString);
+      setDailyQueueAppointments(dailyAppointments);
+    } else {
+      setDailyQueueAppointments([]);
+    }
+  }, [dailyQueueDate, appointments]);
 
   const fetchAppointments = async () => {
     setLoading(true);
@@ -88,6 +103,7 @@ const AppointmentsPage = () => {
         <Tab label="Appointment List" />
         <Tab label="Add Appointment" />
         <Tab label="Calendar View" />
+        <Tab label="Daily Queue" />
       </Tabs>
       <Box sx={{ mt: 2 }}>
         {tabValue === 0 && (
@@ -152,6 +168,47 @@ const AppointmentsPage = () => {
               Appointment Calendar
             </Typography>
             <CalendarView />
+          </Box>
+        )}
+        {tabValue === 3 && (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Daily Queue
+            </Typography>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Select Day"
+                value={dailyQueueDate}
+                onChange={(newValue) => setDailyQueueDate(newValue)}
+                renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
+              />
+            </LocalizationProvider>
+            {dailyQueueDate ? (
+              dailyQueueAppointments.length > 0 ? (
+                <Paper sx={{ p: 2 }}>
+                  {dailyQueueAppointments.map((appointment) => (
+                    <Box key={appointment.id} sx={{ mb: 2, borderBottom: '1px solid #ccc', pb: 1 }}>
+                      <Typography>
+                        <strong>Patient ID:</strong> {appointment.patient_id}
+                      </Typography>
+                      <Typography>
+                        <strong>Date:</strong> {appointment.appointment_date}
+                      </Typography>
+                      <Typography>
+                        <strong>Time:</strong> {appointment.appointment_time}
+                      </Typography>
+                      <Typography>
+                        <strong>Doctor:</strong> {appointment.doctor}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Paper>
+              ) : (
+                <Typography>No appointments scheduled for this day.</Typography>
+              )
+            ) : (
+              <Typography>Select a day to view appointments.</Typography>
+            )}
           </Box>
         )}
       </Box>
