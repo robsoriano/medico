@@ -4,6 +4,7 @@ import { Container, Tabs, Tab, Box, Typography, Paper, TextField, Button } from 
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import AppointmentForm from '../components/AppointmentForm';
+import CalendarView from '../components/CalendarView';
 import { getAppointments, addAppointment } from '../services/appointmentService';
 import { Link } from 'react-router-dom';
 
@@ -86,6 +87,7 @@ const AppointmentsPage = () => {
       <Tabs value={tabValue} onChange={handleTabChange} aria-label="Appointment management tabs">
         <Tab label="Appointment List" />
         <Tab label="Add Appointment" />
+        <Tab label="Calendar View" />
       </Tabs>
       <Box sx={{ mt: 2 }}>
         {tabValue === 0 && (
@@ -143,6 +145,14 @@ const AppointmentsPage = () => {
         )}
         {tabValue === 1 && (
           <AppointmentForm onSubmit={handleAppointmentSubmit} />
+        )}
+        {tabValue === 2 && (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Appointment Calendar
+            </Typography>
+            <CalendarView />
+          </Box>
         )}
       </Box>
     </Container>
