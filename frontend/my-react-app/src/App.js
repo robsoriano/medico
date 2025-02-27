@@ -13,6 +13,7 @@ import AppointmentsPage from "./pages/AppointmentsPage";
 import CalendarView from "./components/CalendarView"; // Directly using CalendarView.js
 import { NotificationProvider } from "./context/NotificationContext";
 
+
 // Create a Material-UI theme
 const theme = createTheme({
   palette: {
