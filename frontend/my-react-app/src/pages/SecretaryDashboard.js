@@ -1,11 +1,13 @@
 // src/pages/SecretaryDashboard.js
 import React from 'react';
-import { AppBar, Toolbar, Typography, Box, Container, Grid, Paper, Button } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
+import { AppBar, Toolbar, Typography, Box, Container, Grid, Paper, Button } from '@mui/material';
 import { logout } from '../services/authService';
+import { getUserName } from '../services/tokenService';
 
 const SecretaryDashboard = () => {
   const navigate = useNavigate();
+  const username = getUserName();
 
   const handleLogout = () => {
     logout();
@@ -34,21 +36,24 @@ const SecretaryDashboard = () => {
         }}
       >
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <Typography variant="h5" gutterBottom>
+            Welcome, {username}
+          </Typography>
           <Grid container spacing={3}>
             {/* Appointment Scheduling Section */}
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2, height: 300 }}>
+              <Paper sx={{ p: 2, height: 240 }}>
                 <Typography variant="h6" gutterBottom>
-                  Manage Appointments
+                  Schedule Appointments
                 </Typography>
                 <Button variant="contained" component={Link} to="/appointments" sx={{ mt: 2 }}>
-                  Schedule Appointments
+                  Manage Appointments
                 </Button>
               </Paper>
             </Grid>
             {/* Patient Records Section */}
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2, height: 300 }}>
+              <Paper sx={{ p: 2, height: 240 }}>
                 <Typography variant="h6" gutterBottom>
                   Manage Patient Records
                 </Typography>

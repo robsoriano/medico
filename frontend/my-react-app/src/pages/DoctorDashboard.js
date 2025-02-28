@@ -6,9 +6,11 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { logout } from '../services/authService';
 import { getAppointments } from '../services/appointmentService';
+import { getUserName } from '../services/tokenService';
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
+  const username = getUserName();
 
   const handleLogout = () => {
     logout();
@@ -27,7 +29,6 @@ const DoctorDashboard = () => {
       setLoadingAppointments(true);
       try {
         const response = await getAppointments();
-        // Filter appointments for the selected day (YYYY-MM-DD)
         const selectedDateString = dailyQueueDate.toISOString().split('T')[0];
         const daily = response.data.filter(
           (appointment) => appointment.appointment_date === selectedDateString
@@ -65,6 +66,9 @@ const DoctorDashboard = () => {
         }}
       >
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <Typography variant="h5" gutterBottom>
+            Welcome, {username}
+          </Typography>
           <Grid container spacing={3}>
             {/* Daily Queue Section */}
             <Grid item xs={12}>
