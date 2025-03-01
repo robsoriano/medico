@@ -7,6 +7,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { logout } from '../services/authService';
 import { getAppointments } from '../services/appointmentService';
 import { getUserName } from '../services/tokenService';
+import CurrentTime from '../components/CurrentTime';
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
@@ -69,6 +70,7 @@ const DoctorDashboard = () => {
           <Typography variant="h5" gutterBottom>
             Welcome, {username}
           </Typography>
+          <CurrentTime />
           <Grid container spacing={3}>
             {/* Daily Queue Section */}
             <Grid item xs={12}>

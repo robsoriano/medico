@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Box, Container, Grid, Paper, Button } from '@mui/material';
 import { logout } from '../services/authService';
 import { getUserName } from '../services/tokenService';
+import CurrentTime from '../components/CurrentTime';
 
 const SecretaryDashboard = () => {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ const SecretaryDashboard = () => {
           <Typography variant="h5" gutterBottom>
             Welcome, {username}
           </Typography>
+          <CurrentTime />
           <Grid container spacing={3}>
             {/* Appointment Scheduling Section */}
             <Grid item xs={12} md={6}>
