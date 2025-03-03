@@ -375,6 +375,106 @@ def delete_appointment(appointment_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# Create a new patient record
+@app.route('/api/patients/<int:patient_id>/records', methods=['POST'])
+@jwt_required()
+def create_patient_record(patient_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Request must be JSON'}), 400
+
+    # Validate required fields: 'notes' and 'doctor' are required
+    if 'notes' not in data or 'doctor' not in data:
+        return jsonify({'error': 'Missing required fields: notes and doctor'}), 400
+
+    try:
+        new_record = PatientRecord(
+            patient_id=patient_id,
+            doctor=data['doctor'].strip(),
+            notes=data['notes'].strip(),
+            diagnosis=data.get('diagnosis'),
+            prescription=data.get('prescription')
+        )
+        db.session.add(new_record)
+        db.session.commit()
+        return jsonify({
+            'message': 'Patient record created successfully',
+            'record': {
+                'id': new_record.id,
+                'patient_id': new_record.patient_id,
+                'doctor': new_record.doctor,
+                'notes': new_record.notes,
+                'diagnosis': new_record.diagnosis,
+                'prescription': new_record.prescription,
+                'record_date': new_record.record_date.isoformat()
+            }
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Retrieve all records for a patient
+@app.route('/api/patients/<int:patient_id>/records', methods=['GET'])
+@jwt_required()
+def get_patient_records(patient_id):
+    try:
+        records = PatientRecord.query.filter_by(patient_id=patient_id).all()
+        record_list = [{
+            'id': record.id,
+            'doctor': record.doctor,
+            'notes': record.notes,
+            'diagnosis': record.diagnosis,
+            'prescription': record.prescription,
+            'record_date': record.record_date.isoformat()
+        } for record in records]
+        return jsonify(record_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Update a specific patient record
+@app.route('/api/patients/<int:patient_id>/records/<int:record_id>', methods=['PUT'])
+@jwt_required()
+def update_patient_record(patient_id, record_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Request must be JSON'}), 400
+
+    try:
+        record = PatientRecord.query.filter_by(id=record_id, patient_id=patient_id).first()
+        if not record:
+            return jsonify({'error': 'Record not found'}), 404
+
+        if 'notes' in data:
+            record.notes = data['notes'].strip()
+        if 'doctor' in data:
+            record.doctor = data['doctor'].strip()
+        if 'diagnosis' in data:
+            record.diagnosis = data.get('diagnosis')
+        if 'prescription' in data:
+            record.prescription = data.get('prescription')
+
+        db.session.commit()
+        return jsonify({'message': 'Patient record updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Delete a specific patient record (optional, or consider soft deletion)
+@app.route('/api/patients/<int:patient_id>/records/<int:record_id>', methods=['DELETE'])
+@jwt_required()
+def delete_patient_record(patient_id, record_id):
+    try:
+        record = PatientRecord.query.filter_by(id=record_id, patient_id=patient_id).first()
+        if not record:
+            return jsonify({'error': 'Record not found'}), 404
+
+        db.session.delete(record)
+        db.session.commit()
+        return jsonify({'message': 'Patient record deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 # A simple home route
 @app.route('/')
 def home():
