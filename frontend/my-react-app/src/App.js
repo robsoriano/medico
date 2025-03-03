@@ -1,5 +1,5 @@
 // src/App.js
-import React from "react";
+import React, { useState } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -12,19 +12,9 @@ import PatientEdit from "./pages/PatientEdit"; // Newly created edit page
 import AppointmentsPage from "./pages/AppointmentsPage";  
 import CalendarView from "./components/CalendarView"; // Directly using CalendarView.js
 import { NotificationProvider } from "./context/NotificationContext";
-
-
-// Create a Material-UI theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#1976d2",
-    },
-    secondary: {
-      main: "#dc004e",
-    },
-  },
-});
+import { IconButton } from "@mui/material";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ element }) => {
@@ -32,8 +22,28 @@ const PrivateRoute = ({ element }) => {
 };
 
 function App() {
+  // State for dark mode toggle
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Create a theme that switches mode based on darkMode state
+  const appliedTheme = createTheme({
+    palette: {
+      mode: darkMode ? "dark" : "light",
+      primary: {
+        main: "#1976d2",
+      },
+      secondary: {
+        main: "#dc004e",
+      },
+    },
+  });
+
+  const toggleDarkMode = () => {
+    setDarkMode((prevMode) => !prevMode);
+  };
+
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={appliedTheme}>
       <CssBaseline />
       <NotificationProvider>
         <Routes>
@@ -46,6 +56,14 @@ function App() {
           <Route path="/appointments/calendar" element={<PrivateRoute element={<CalendarView />} />} />
           <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
+        {/* Dark Mode Toggle Button */}
+        <IconButton
+          onClick={toggleDarkMode}
+          sx={{ position: 'fixed', bottom: 16, right: 16 }}
+          color="inherit"
+        >
+          {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+        </IconButton>
       </NotificationProvider>
     </ThemeProvider>
   );
