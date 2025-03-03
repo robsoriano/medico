@@ -31,12 +31,13 @@ const SecretaryDashboard = () => {
           backgroundColor: (theme) =>
             theme.palette.mode === "light" ? theme.palette.grey[100] : theme.palette.grey[900],
           flexGrow: 1,
-          height: "100vh",
+          minHeight: "100vh",
           overflow: "auto",
-          pt: 8,
+          pt: { xs: 6, sm: 8, md: 10 },
+          px: { xs: 2, sm: 4, md: 6 },
         }}
       >
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 } }}>
           <Typography variant="h5" gutterBottom>
             Welcome, {username}
           </Typography>
@@ -44,7 +45,7 @@ const SecretaryDashboard = () => {
           <Grid container spacing={3}>
             {/* Appointment Scheduling Section */}
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2, height: 240 }}>
+              <Paper sx={{ p: { xs: 2, md: 3 }, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
                   Schedule Appointments
                 </Typography>
@@ -55,7 +56,7 @@ const SecretaryDashboard = () => {
             </Grid>
             {/* Patient Records Section */}
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2, height: 240 }}>
+              <Paper sx={{ p: { xs: 2, md: 3 }, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
                   Manage Patient Records
                 </Typography>

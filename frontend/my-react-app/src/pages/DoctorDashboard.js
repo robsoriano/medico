@@ -61,12 +61,13 @@ const DoctorDashboard = () => {
           backgroundColor: (theme) =>
             theme.palette.mode === "light" ? theme.palette.grey[100] : theme.palette.grey[900],
           flexGrow: 1,
-          height: "100vh",
+          minHeight: "100vh",
           overflow: "auto",
-          pt: 8,
+          pt: { xs: 6, sm: 8, md: 10 },
+          px: { xs: 2, sm: 4, md: 6 },
         }}
       >
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 } }}>
           <Typography variant="h5" gutterBottom>
             Welcome, {username}
           </Typography>
@@ -74,7 +75,7 @@ const DoctorDashboard = () => {
           <Grid container spacing={3}>
             {/* Daily Queue Section */}
             <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
+              <Paper sx={{ p: 2, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
                   Daily Queue
                 </Typography>
@@ -111,7 +112,7 @@ const DoctorDashboard = () => {
             </Grid>
             {/* Patient Files Section */}
             <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 2, height: 240 }}>
+              <Paper sx={{ p: 2, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
                   Patient Files
                 </Typography>
@@ -122,7 +123,7 @@ const DoctorDashboard = () => {
             </Grid>
             {/* Calendar View Section */}
             <Grid item xs={12} md={8}>
-              <Paper sx={{ p: 2, height: 240 }}>
+              <Paper sx={{ p: 2, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
                   Calendar View
                 </Typography>
