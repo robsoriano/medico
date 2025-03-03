@@ -26,7 +26,7 @@ function App() {
   // State for dark mode toggle
   const [darkMode, setDarkMode] = useState(false);
 
-  // Create a theme that switches mode based on darkMode state
+  // Create a theme with enhanced typography, spacing, and component overrides
   const appliedTheme = createTheme({
     palette: {
       mode: darkMode ? "dark" : "light",
@@ -35,6 +35,33 @@ function App() {
       },
       secondary: {
         main: "#dc004e",
+      },
+    },
+    typography: {
+      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+      h5: {
+        fontWeight: 600,
+      },
+      body1: {
+        fontSize: "1rem",
+      },
+    },
+    spacing: 8, // Default spacing factor
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 8,
+            textTransform: "none",
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            padding: 16,
+          },
+        },
       },
     },
   });
@@ -61,7 +88,7 @@ function App() {
           {/* Dark Mode Toggle Button */}
           <IconButton
             onClick={toggleDarkMode}
-            sx={{ position: 'fixed', bottom: 16, right: 16 }}
+            sx={{ position: "fixed", bottom: 16, right: 16 }}
             color="inherit"
           >
             {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
