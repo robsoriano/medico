@@ -8,23 +8,24 @@ import { logout } from '../services/authService';
 import { getAppointments } from '../services/appointmentService';
 import { getUserName } from '../services/tokenService';
 import CurrentTime from '../components/CurrentTime';
+import SimpleLanguageSwitcher from '../components/SimpleLanguageSwitcher';
+import { useSimpleLanguage } from '../context/SimpleLanguageContext';
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
   const username = getUserName();
+  const { t } = useSimpleLanguage();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  // State for Daily Queue
   const [dailyQueueDate, setDailyQueueDate] = useState(new Date());
   const [dailyQueueAppointments, setDailyQueueAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
   const [appointmentsError, setAppointmentsError] = useState('');
 
-  // Fetch appointments for the selected day
   useEffect(() => {
     const fetchDailyAppointments = async () => {
       setLoadingAppointments(true);
@@ -36,23 +37,26 @@ const DoctorDashboard = () => {
         );
         setDailyQueueAppointments(daily);
       } catch (error) {
-        setAppointmentsError('Failed to fetch daily appointments.');
+        setAppointmentsError(t('failedToFetchAppointments'));
       } finally {
         setLoadingAppointments(false);
       }
     };
 
     fetchDailyAppointments();
-  }, [dailyQueueDate]);
+  }, [dailyQueueDate, t]);
 
   return (
     <Box sx={{ display: "flex" }}>
       <AppBar position="absolute">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Medical CRM - Doctor Dashboard
+            {t('doctorDashboard')}
           </Typography>
-          <Button color="inherit" onClick={handleLogout}>Logout</Button>
+          <SimpleLanguageSwitcher />
+          <Button color="inherit" onClick={handleLogout}>
+            {t('logout')}
+          </Button>
         </Toolbar>
       </AppBar>
       <Box
@@ -69,66 +73,63 @@ const DoctorDashboard = () => {
       >
         <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 } }}>
           <Typography variant="h5" gutterBottom>
-            Welcome, {username}
+            {t('welcome')}, {username}
           </Typography>
           <CurrentTime />
           <Grid container spacing={3}>
-            {/* Daily Queue Section */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
-                  Daily Queue
+                  {t('dailyQueue')}
                 </Typography>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    label="Select Date"
+                    label={t('selectDate')}
                     value={dailyQueueDate}
                     onChange={(newValue) => newValue && setDailyQueueDate(newValue)}
                     renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
                   />
                 </LocalizationProvider>
                 {loadingAppointments ? (
-                  <Typography>Loading appointments...</Typography>
+                  <Typography>{t('loadingAppointments')}</Typography>
                 ) : appointmentsError ? (
                   <Typography color="error">{appointmentsError}</Typography>
                 ) : dailyQueueAppointments.length > 0 ? (
                   dailyQueueAppointments.map((appointment) => (
                     <Box key={appointment.id} sx={{ mt: 1, mb: 1, borderBottom: '1px solid #ccc', pb: 1 }}>
                       <Typography>
-                        <strong>Patient ID:</strong> {appointment.patient_id}
+                        <strong>{t('patientId')}:</strong> {appointment.patient_id}
                       </Typography>
                       <Typography>
-                        <strong>Time:</strong> {appointment.appointment_time}
+                        <strong>{t('time')}:</strong> {appointment.appointment_time}
                       </Typography>
                       <Typography>
-                        <strong>Doctor:</strong> {appointment.doctor}
+                        <strong>{t('doctor')}:</strong> {appointment.doctor}
                       </Typography>
                     </Box>
                   ))
                 ) : (
-                  <Typography>No appointments scheduled for this day.</Typography>
+                  <Typography>{t('noAppointmentsScheduled')}</Typography>
                 )}
               </Paper>
             </Grid>
-            {/* Patient Files Section */}
             <Grid item xs={12} md={4}>
               <Paper sx={{ p: 2, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
-                  Patient Files
+                  {t('patientFiles')}
                 </Typography>
                 <Button variant="contained" component={Link} to="/patients" sx={{ mt: 2 }}>
-                  View Patient Records
+                  {t('viewPatientRecords')}
                 </Button>
               </Paper>
             </Grid>
-            {/* Calendar View Section */}
             <Grid item xs={12} md={8}>
               <Paper sx={{ p: 2, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
-                  Calendar View
+                  {t('calendarView')}
                 </Typography>
                 <Button variant="contained" component={Link} to="/appointments/calendar" sx={{ mt: 2 }}>
-                  View Full Calendar
+                  {t('viewFullCalendar')}
                 </Button>
               </Paper>
             </Grid>

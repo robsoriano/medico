@@ -12,6 +12,7 @@ import PatientEdit from "./pages/PatientEdit"; // Newly created edit page
 import AppointmentsPage from "./pages/AppointmentsPage";  
 import CalendarView from "./components/CalendarView"; // Directly using CalendarView.js
 import { NotificationProvider } from "./context/NotificationContext";
+import { SimpleLanguageProvider } from "./context/SimpleLanguageContext";
 import { IconButton } from "@mui/material";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
@@ -45,26 +46,28 @@ function App() {
   return (
     <ThemeProvider theme={appliedTheme}>
       <CssBaseline />
-      <NotificationProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
-          <Route path="/patients" element={<PrivateRoute element={<PatientsPage />} />} />
-          <Route path="/patients/:id" element={<PrivateRoute element={<PatientDetail />} />} />
-          <Route path="/patients/:id/edit" element={<PrivateRoute element={<PatientEdit />} />} />
-          <Route path="/appointments" element={<PrivateRoute element={<AppointmentsPage />} />} />
-          <Route path="/appointments/calendar" element={<PrivateRoute element={<CalendarView />} />} />
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-        </Routes>
-        {/* Dark Mode Toggle Button */}
-        <IconButton
-          onClick={toggleDarkMode}
-          sx={{ position: 'fixed', bottom: 16, right: 16 }}
-          color="inherit"
-        >
-          {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-        </IconButton>
-      </NotificationProvider>
+      <SimpleLanguageProvider>
+        <NotificationProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
+            <Route path="/patients" element={<PrivateRoute element={<PatientsPage />} />} />
+            <Route path="/patients/:id" element={<PrivateRoute element={<PatientDetail />} />} />
+            <Route path="/patients/:id/edit" element={<PrivateRoute element={<PatientEdit />} />} />
+            <Route path="/appointments" element={<PrivateRoute element={<AppointmentsPage />} />} />
+            <Route path="/appointments/calendar" element={<PrivateRoute element={<CalendarView />} />} />
+            <Route path="/" element={<Navigate to="/dashboard" />} />
+          </Routes>
+          {/* Dark Mode Toggle Button */}
+          <IconButton
+            onClick={toggleDarkMode}
+            sx={{ position: 'fixed', bottom: 16, right: 16 }}
+            color="inherit"
+          >
+            {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
+        </NotificationProvider>
+      </SimpleLanguageProvider>
     </ThemeProvider>
   );
 }
