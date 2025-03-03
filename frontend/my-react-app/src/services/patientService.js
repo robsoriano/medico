@@ -12,4 +12,7 @@ export const deletePatient = (id) => API.delete(`/patients/${id}`);
 
 export const getPatient = (id) => {
     return API.get(`/patients/${id}`); }
+
+// NEW: Function to get patient records
+export const getPatientRecords = (patientId) => API.get(`/api/patients/${patientId}/records`);
     
