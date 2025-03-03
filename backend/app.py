@@ -8,7 +8,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate  
 import re
 from datetime import timedelta, datetime
-from models import db, User, Patient, Appointment  # Make sure Appointment is imported from models
+from models import db, User, Patient, Appointment, PatientRecord  # Make sure Appointment is imported from models
 
 app = Flask(__name__)
 
@@ -411,6 +411,7 @@ def create_patient_record(patient_id):
         }), 201
     except Exception as e:
         db.session.rollback()
+        print("Error in create_patient_record:", e)  # Log the error to your server console
         return jsonify({'error': str(e)}), 500
 
 # Retrieve all records for a patient

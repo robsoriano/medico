@@ -11,8 +11,9 @@ export const updatePatient = (id, patientData) => API.put(`/patients/${id}`, pat
 export const deletePatient = (id) => API.delete(`/patients/${id}`);
 
 export const getPatient = (id) => {
-    return API.get(`/patients/${id}`); }
+    return API.get(`/patients/${id}`);}
 
 // NEW: Function to get patient records
-export const getPatientRecords = (patientId) => API.get(`/api/patients/${patientId}/records`);
-    
+export const getPatientRecords = (patientId) => API.get(`/patients/${patientId}/records`);
+export const addPatientRecord = (patientId, recordData) =>
+    API.post(`/patients/${patientId}/records`, recordData);

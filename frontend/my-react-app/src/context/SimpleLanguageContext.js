@@ -18,6 +18,16 @@ const translations = {
     viewPatientRecords: "View Patient Records",
     calendarView: "Calendar View",
     viewFullCalendar: "View Full Calendar",
+    failedToFetchRecords: "Failed to fetch records.",
+    loadingRecords: "Loading records...",
+    patientRecords: "Patient Records",
+    noRecordsFound: "No records found.",
+    recordDate: "Record Date",
+    doctor: "Doctor",
+    notes: "Notes",
+    diagnosis: "Diagnosis",
+    prescription: "Prescription",
+    addRecord: "Add Record"
   },
   es: {
     welcome: "Bienvenido",
@@ -35,6 +45,16 @@ const translations = {
     viewPatientRecords: "Ver Expedientes de Pacientes",
     calendarView: "Vista de Calendario",
     viewFullCalendar: "Ver Calendario Completo",
+    failedToFetchRecords: "Error al cargar los registros.",
+    loadingRecords: "Cargando registros...",
+    patientRecords: "Registros del Paciente",
+    noRecordsFound: "No se encontraron registros.",
+    recordDate: "Fecha del Registro",
+    doctor: "Doctor",
+    notes: "Notas",
+    diagnosis: "Diagnóstico",
+    prescription: "Receta",
+    addRecord: "Agregar Registro"
   }
 };
 

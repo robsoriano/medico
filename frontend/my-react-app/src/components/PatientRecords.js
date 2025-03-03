@@ -1,29 +1,38 @@
 // src/components/PatientRecords.js
 import React, { useEffect, useState } from 'react';
 import { Typography, Box, Paper, Button } from '@mui/material';
-import { getPatientRecords } from '../services/patientService'; // Ensure you have a function for this
+import { getPatientRecords } from '../services/patientService';
 import { useSimpleLanguage } from '../context/SimpleLanguageContext';
+import PatientRecordForm from './PatientRecordForm';
+import { getUserRole } from '../services/tokenService';
 
 const PatientRecords = ({ patientId }) => {
   const { t } = useSimpleLanguage();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formOpen, setFormOpen] = useState(false);
+  
+  const role = getUserRole();
+
+  const fetchRecords = async () => {
+    try {
+      const response = await getPatientRecords(patientId);
+      setRecords(response.data);
+    } catch (err) {
+      setError(t('failedToFetchRecords') || 'Failed to fetch records.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchRecords = async () => {
-      try {
-        const response = await getPatientRecords(patientId);
-        setRecords(response.data);
-      } catch (err) {
-        setError(t('failedToFetchRecords') || 'Failed to fetch records.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchRecords();
   }, [patientId, t]);
+
+  const handleRecordAdded = (newRecord) => {
+    setRecords([...records, newRecord]);
+  };
 
   return (
     <Box sx={{ mt: 3 }}>
@@ -61,12 +70,21 @@ const PatientRecords = ({ patientId }) => {
           </Paper>
         ))
       )}
-      {/* For now, the Add Record button is just a placeholder */}
-      <Button variant="contained" sx={{ mt: 2 }}>
-        {t('addRecord')}
-      </Button>
+      {/* Show Add Record button only for doctors */}
+      {role === 'doctor' && (
+        <Button variant="contained" sx={{ mt: 2 }} onClick={() => setFormOpen(true)}>
+          {t('addRecord')}
+        </Button>
+      )}
+      <PatientRecordForm
+        patientId={patientId}
+        open={formOpen}
+        handleClose={() => setFormOpen(false)}
+        onRecordAdded={handleRecordAdded}
+      />
     </Box>
   );
 };
 
 export default PatientRecords;
+
