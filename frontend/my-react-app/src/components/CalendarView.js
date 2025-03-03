@@ -4,6 +4,8 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { getAppointments } from '../services/appointmentService';
+import { Button } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 const locales = {
   'en-US': require('date-fns/locale/en-US'),
@@ -49,14 +51,19 @@ const CalendarView = () => {
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
 
   return (
-    <div style={{ height: '80vh', margin: '20px' }}>
-      <Calendar
-        localizer={localizer}
-        events={appointments}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: '100%' }}
-      />
+    <div style={{ margin: '20px' }}>
+      <Button variant="outlined" component={Link} to="/dashboard" sx={{ mb: 2 }}>
+        Back to Dashboard
+      </Button>
+      <div style={{ height: '80vh' }}>
+        <Calendar
+          localizer={localizer}
+          events={appointments}
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: '100%' }}
+        />
+      </div>
     </div>
   );
 };
