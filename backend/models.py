@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -45,3 +46,15 @@ class Appointment(db.Model):
 
     def __repr__(self):
         return f'<Appointment {self.id} for patient {self.patient_id}>'
+
+class PatientRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    doctor = db.Column(db.String(80), nullable=False)
+    notes = db.Column(db.Text, nullable=False)
+    diagnosis = db.Column(db.String(200))
+    prescription = db.Column(db.String(200))
+    record_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<PatientRecord {self.id} for patient {self.patient_id}>'
