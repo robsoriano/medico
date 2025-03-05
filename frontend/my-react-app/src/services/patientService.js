@@ -19,3 +19,5 @@ export const addPatientRecord = (patientId, recordData) =>
     API.post(`/patients/${patientId}/records`, recordData);
 export const deletePatientRecord = (patientId, recordId) =>
     API.delete(`/patients/${patientId}/records/${recordId}`);
+export const updatePatientRecord = (patientId, recordId, recordData) =>
+    API.put(`/patients/${patientId}/records/${recordId}`, recordData);

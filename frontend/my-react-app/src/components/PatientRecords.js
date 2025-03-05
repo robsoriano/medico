@@ -14,6 +14,7 @@ const PatientRecords = ({ patientId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState(null);
   
   const role = getUserRole();
 
@@ -35,7 +36,9 @@ const PatientRecords = ({ patientId }) => {
   }, [patientId, t]);
 
   const handleRecordAdded = () => {
+    // After a record is added or updated, re-fetch records and clear editing state.
     fetchRecords();
+    setEditingRecord(null);
   };
 
   const handleDeleteRecord = async (recordId) => {
@@ -46,6 +49,11 @@ const PatientRecords = ({ patientId }) => {
     } catch (err) {
       showNotification(t('failedToDeleteRecord') || "Failed to delete record", "error");
     }
+  };
+
+  const handleEditRecord = (record) => {
+    setEditingRecord(record);
+    setFormOpen(true);
   };
 
   return (
@@ -82,30 +90,40 @@ const PatientRecords = ({ patientId }) => {
               </Typography>
             )}
             {role === 'doctor' && (
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                sx={{ mt: 1 }}
-                onClick={() => handleDeleteRecord(record.id)}
-              >
-                {t('deleteRecord') || "Delete"}
-              </Button>
+              <Box sx={{ mt: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  sx={{ mr: 1 }}
+                  onClick={() => handleEditRecord(record)}
+                >
+                  {t('editRecord') || "Edit"}
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  onClick={() => handleDeleteRecord(record.id)}
+                >
+                  {t('deleteRecord') || "Delete"}
+                </Button>
+              </Box>
             )}
           </Paper>
         ))
       )}
-      {/* Show Add Record button only for doctors */}
+      {/* Show Add Record button only for doctors (if not editing) */}
       {role === 'doctor' && (
-        <Button variant="contained" sx={{ mt: 2 }} onClick={() => setFormOpen(true)}>
+        <Button variant="contained" sx={{ mt: 2 }} onClick={() => { setEditingRecord(null); setFormOpen(true); }}>
           {t('addRecord')}
         </Button>
       )}
       <PatientRecordForm
         patientId={patientId}
         open={formOpen}
-        handleClose={() => setFormOpen(false)}
+        handleClose={() => { setFormOpen(false); setEditingRecord(null); }}
         onRecordAdded={handleRecordAdded}
+        initialRecord={editingRecord}
       />
     </Box>
   );

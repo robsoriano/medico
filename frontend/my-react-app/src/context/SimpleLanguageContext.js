@@ -27,7 +27,18 @@ const translations = {
     notes: "Notes",
     diagnosis: "Diagnosis",
     prescription: "Prescription",
-    addRecord: "Add Record"
+    addRecord: "Add Record",
+    email: "Email",
+    age: "Age",
+    birthDate: "Birth Date",
+    homeAddress: "Home Address",
+    homePhone: "Home Phone",
+    personalPhone: "Personal Phone",
+    occupation: "Occupation",
+    medicalInsurance: "Medical Insurance",
+    backToPatientList: "Back to Patient List",
+    editPatient: "Edit Patient",
+    deleteRecord: "Delete"
   },
   es: {
     welcome: "Bienvenido",
@@ -54,7 +65,18 @@ const translations = {
     notes: "Notas",
     diagnosis: "Diagnóstico",
     prescription: "Receta",
-    addRecord: "Agregar Registro"
+    addRecord: "Agregar Registro",
+    email: "Correo electrónico",
+    age: "Edad",
+    birthDate: "Fecha de nacimiento",
+    homeAddress: "Dirección",
+    homePhone: "Teléfono de casa",
+    personalPhone: "Teléfono personal",
+    occupation: "Ocupación",
+    medicalInsurance: "Seguro médico",
+    backToPatientList: "Volver a la lista de pacientes",
+    editPatient: "Editar paciente",
+    deleteRecord: "Eliminar"
   }
 };
 

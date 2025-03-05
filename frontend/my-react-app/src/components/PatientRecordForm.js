@@ -1,16 +1,30 @@
 // src/components/PatientRecordForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
-import { addPatientRecord } from '../services/patientService';
+import { addPatientRecord, updatePatientRecord } from '../services/patientService';
 import { useNotification } from '../context/NotificationContext';
 import { getUserName } from '../services/tokenService';
 
-const PatientRecordForm = ({ patientId, open, handleClose, onRecordAdded }) => {
+const PatientRecordForm = ({ patientId, open, handleClose, onRecordAdded, initialRecord }) => {
   const [notes, setNotes] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [prescription, setPrescription] = useState('');
   const { showNotification } = useNotification();
-  const doctor = getUserName(); // Automatically assign logged-in doctor's name
+  const doctor = getUserName(); // Automatically assign the logged-in doctor's name
+
+  // If in edit mode, prepopulate fields
+  useEffect(() => {
+    if (initialRecord) {
+      setNotes(initialRecord.notes || '');
+      setDiagnosis(initialRecord.diagnosis || '');
+      setPrescription(initialRecord.prescription || '');
+    } else {
+      // Reset fields for add mode
+      setNotes('');
+      setDiagnosis('');
+      setPrescription('');
+    }
+  }, [initialRecord]);
 
   const handleSubmit = async () => {
     if (!notes) {
@@ -18,33 +32,35 @@ const PatientRecordForm = ({ patientId, open, handleClose, onRecordAdded }) => {
       return;
     }
     const payload = { 
-      notes, 
-      diagnosis, 
-      prescription, 
-      doctor  // Automatically include doctor's name
+      notes: notes.trim(), 
+      diagnosis: diagnosis.trim() || null, 
+      prescription: prescription.trim() || null, 
+      doctor // Automatically include the doctor's name
     };
 
-    // Log payload to check values before submission
     console.log("Submitting payload:", payload);
-
     try {
-      const response = await addPatientRecord(patientId, payload);
-      showNotification("Record added successfully", "success");
-      onRecordAdded(response.data);
-      // Reset form fields
-      setNotes('');
-      setDiagnosis('');
-      setPrescription('');
+      if (initialRecord) {
+        // Edit mode: update the record
+        const response = await updatePatientRecord(patientId, initialRecord.id, payload);
+        showNotification("Record updated successfully", "success");
+        onRecordAdded(response.data); // Optionally update the list (or re-fetch)
+      } else {
+        // Add mode: create a new record
+        const response = await addPatientRecord(patientId, payload);
+        showNotification("Record added successfully", "success");
+        onRecordAdded(response.data);
+      }
       handleClose();
     } catch (error) {
       console.error("Error submitting record:", error);
-      showNotification("Failed to add record", "error");
+      showNotification("Failed to save record", "error");
     }
   };
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Add New Patient Record</DialogTitle>
+      <DialogTitle>{initialRecord ? "Edit Patient Record" : "Add New Patient Record"}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
@@ -76,7 +92,9 @@ const PatientRecordForm = ({ patientId, open, handleClose, onRecordAdded }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">Save Record</Button>
+        <Button onClick={handleSubmit} variant="contained">
+          {initialRecord ? "Update Record" : "Save Record"}
+        </Button>
       </DialogActions>
     </Dialog>
   );
