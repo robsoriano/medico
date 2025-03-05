@@ -1,6 +1,6 @@
 // src/components/PatientRecords.js
 import React, { useEffect, useState } from 'react';
-import { Typography, Box, Paper, Button } from '@mui/material';
+import { Typography, Box, Paper, Button, TextField } from '@mui/material';
 import { getPatientRecords, deletePatientRecord } from '../services/patientService';
 import { useSimpleLanguage } from '../context/SimpleLanguageContext';
 import PatientRecordForm from './PatientRecordForm';
@@ -17,6 +17,7 @@ const PatientRecords = ({ patientId }) => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [viewingRecord, setViewingRecord] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const role = getUserRole();
 
@@ -36,6 +37,16 @@ const PatientRecords = ({ patientId }) => {
   useEffect(() => {
     fetchRecords();
   }, [patientId, t]);
+
+  // Filter records based on the search query
+  const filteredRecords = records.filter((record) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      record.notes.toLowerCase().includes(query) ||
+      (record.diagnosis && record.diagnosis.toLowerCase().includes(query)) ||
+      (record.doctor && record.doctor.toLowerCase().includes(query))
+    );
+  });
 
   const handleRecordAdded = () => {
     fetchRecords();
@@ -67,14 +78,22 @@ const PatientRecords = ({ patientId }) => {
       <Typography variant="h6" gutterBottom>
         {t('patientRecords')}
       </Typography>
+      {/* Search Input */}
+      <TextField
+        label={t('searchRecords') || "Search Records"}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        fullWidth
+        margin="normal"
+      />
       {loading ? (
         <Typography>{t('loadingRecords')}</Typography>
       ) : error ? (
         <Typography color="error">{error}</Typography>
-      ) : records.length === 0 ? (
+      ) : filteredRecords.length === 0 ? (
         <Typography>{t('noRecordsFound')}</Typography>
       ) : (
-        records.map((record) => (
+        filteredRecords.map((record) => (
           <Paper key={record.id} sx={{ p: 2, mb: 2 }}>
             <Typography variant="subtitle1">
               {t('recordDate')}: {new Date(record.record_date).toLocaleString()}

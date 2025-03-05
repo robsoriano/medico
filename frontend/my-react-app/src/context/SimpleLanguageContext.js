@@ -50,7 +50,8 @@ const translations = {
     prescription: "Prescription",
     editRecord: "Edit",
     deleteRecord: "Delete",
-    addRecord: "Add Record"
+    addRecord: "Add Record",
+    searchRecords: "Search Records"
   },
   es: {
     welcome: "Bienvenido",
@@ -100,7 +101,8 @@ const translations = {
     prescription: "Receta",
     editRecord: "Editar",
     deleteRecord: "Eliminar",
-    addRecord: "Agregar Registro"
+    addRecord: "Agregar Registro",
+    searchRecords: "Buscar Registros"
   }
 };
 
