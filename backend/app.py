@@ -442,7 +442,6 @@ def update_patient_record(patient_id, record_id):
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Request must be JSON'}), 400
-
     try:
         record = PatientRecord.query.filter_by(id=record_id, patient_id=patient_id).first()
         if not record:
@@ -453,14 +452,19 @@ def update_patient_record(patient_id, record_id):
         if 'doctor' in data:
             record.doctor = data['doctor'].strip()
         if 'diagnosis' in data:
-            record.diagnosis = data.get('diagnosis')
+            record.diagnosis = data.get('diagnosis', "").strip() or None
         if 'prescription' in data:
-            record.prescription = data.get('prescription')
+            record.prescription = data.get('prescription', "").strip() or None
+
+        # Set audit trail fields
+        record.updated_by = get_jwt_identity()  # Using the current logged-in user's identity
+        record.updated_at = datetime.utcnow()
 
         db.session.commit()
         return jsonify({'message': 'Patient record updated successfully'}), 200
     except Exception as e:
         db.session.rollback()
+        print("Error in update_patient_record:", e)
         return jsonify({'error': str(e)}), 500
 
 # Delete a specific patient record (optional, or consider soft deletion)

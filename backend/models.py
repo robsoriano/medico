@@ -55,6 +55,8 @@ class PatientRecord(db.Model):
     diagnosis = db.Column(db.String(200))
     prescription = db.Column(db.String(200))
     record_date = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_by = db.Column(db.String(80))  # stores who last updated the record
+    updated_at = db.Column(db.DateTime)
 
     def __repr__(self):
         return f'<PatientRecord {self.id} for patient {self.patient_id}>'
