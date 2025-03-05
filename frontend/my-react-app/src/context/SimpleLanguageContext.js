@@ -38,7 +38,19 @@ const translations = {
     medicalInsurance: "Medical Insurance",
     backToPatientList: "Back to Patient List",
     editPatient: "Edit Patient",
-    deleteRecord: "Delete"
+    deleteRecord: "Delete",
+    viewRecord: "View",
+    recordDetails: "Record Details",
+    close: "Close",
+    patientRecords: "Patient Records",
+    recordDate: "Record Date",
+    doctor: "Doctor",
+    notes: "Notes",
+    diagnosis: "Diagnosis",
+    prescription: "Prescription",
+    editRecord: "Edit",
+    deleteRecord: "Delete",
+    addRecord: "Add Record"
   },
   es: {
     welcome: "Bienvenido",
@@ -76,7 +88,19 @@ const translations = {
     medicalInsurance: "Seguro médico",
     backToPatientList: "Volver a la lista de pacientes",
     editPatient: "Editar paciente",
-    deleteRecord: "Eliminar"
+    deleteRecord: "Eliminar",
+    viewRecord: "Ver",
+    recordDetails: "Detalles del Registro",
+    close: "Cerrar",
+    patientRecords: "Registros del Paciente",
+    recordDate: "Fecha del Registro",
+    doctor: "Doctor",
+    notes: "Notas",
+    diagnosis: "Diagnóstico",
+    prescription: "Receta",
+    editRecord: "Editar",
+    deleteRecord: "Eliminar",
+    addRecord: "Agregar Registro"
   }
 };
 

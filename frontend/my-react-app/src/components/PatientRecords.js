@@ -4,6 +4,7 @@ import { Typography, Box, Paper, Button } from '@mui/material';
 import { getPatientRecords, deletePatientRecord } from '../services/patientService';
 import { useSimpleLanguage } from '../context/SimpleLanguageContext';
 import PatientRecordForm from './PatientRecordForm';
+import PatientRecordView from './PatientRecordView';
 import { getUserRole } from '../services/tokenService';
 import { useNotification } from '../context/NotificationContext';
 
@@ -15,6 +16,7 @@ const PatientRecords = ({ patientId }) => {
   const [error, setError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
+  const [viewingRecord, setViewingRecord] = useState(null);
   
   const role = getUserRole();
 
@@ -36,9 +38,9 @@ const PatientRecords = ({ patientId }) => {
   }, [patientId, t]);
 
   const handleRecordAdded = () => {
-    // After a record is added or updated, re-fetch records and clear editing state.
     fetchRecords();
     setEditingRecord(null);
+    setViewingRecord(null);
   };
 
   const handleDeleteRecord = async (recordId) => {
@@ -54,6 +56,10 @@ const PatientRecords = ({ patientId }) => {
   const handleEditRecord = (record) => {
     setEditingRecord(record);
     setFormOpen(true);
+  };
+
+  const handleViewRecord = (record) => {
+    setViewingRecord(record);
   };
 
   return (
@@ -89,30 +95,39 @@ const PatientRecords = ({ patientId }) => {
                 {t('prescription')}: {record.prescription}
               </Typography>
             )}
-            {role === 'doctor' && (
-              <Box sx={{ mt: 1 }}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  sx={{ mr: 1 }}
-                  onClick={() => handleEditRecord(record)}
-                >
-                  {t('editRecord') || "Edit"}
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  size="small"
-                  onClick={() => handleDeleteRecord(record.id)}
-                >
-                  {t('deleteRecord') || "Delete"}
-                </Button>
-              </Box>
-            )}
+            <Box sx={{ mt: 1 }}>
+              {role === 'doctor' && (
+                <>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{ mr: 1 }}
+                    onClick={() => handleEditRecord(record)}
+                  >
+                    {t('editRecord') || "Edit"}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    sx={{ mr: 1 }}
+                    onClick={() => handleDeleteRecord(record.id)}
+                  >
+                    {t('deleteRecord') || "Delete"}
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handleViewRecord(record)}
+              >
+                {t('viewRecord') || "View"}
+              </Button>
+            </Box>
           </Paper>
         ))
       )}
-      {/* Show Add Record button only for doctors (if not editing) */}
       {role === 'doctor' && (
         <Button variant="contained" sx={{ mt: 2 }} onClick={() => { setEditingRecord(null); setFormOpen(true); }}>
           {t('addRecord')}
@@ -124,6 +139,11 @@ const PatientRecords = ({ patientId }) => {
         handleClose={() => { setFormOpen(false); setEditingRecord(null); }}
         onRecordAdded={handleRecordAdded}
         initialRecord={editingRecord}
+      />
+      <PatientRecordView
+        record={viewingRecord}
+        open={Boolean(viewingRecord)}
+        handleClose={() => setViewingRecord(null)}
       />
     </Box>
   );
