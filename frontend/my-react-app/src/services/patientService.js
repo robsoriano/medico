@@ -17,3 +17,5 @@ export const getPatient = (id) => {
 export const getPatientRecords = (patientId) => API.get(`/patients/${patientId}/records`);
 export const addPatientRecord = (patientId, recordData) =>
     API.post(`/patients/${patientId}/records`, recordData);
+export const deletePatientRecord = (patientId, recordId) =>
+    API.delete(`/patients/${patientId}/records/${recordId}`);

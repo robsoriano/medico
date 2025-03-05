@@ -1,21 +1,22 @@
 // src/components/PatientRecords.js
 import React, { useEffect, useState } from 'react';
 import { Typography, Box, Paper, Button } from '@mui/material';
-import { getPatientRecords } from '../services/patientService';
+import { getPatientRecords, deletePatientRecord } from '../services/patientService';
 import { useSimpleLanguage } from '../context/SimpleLanguageContext';
 import PatientRecordForm from './PatientRecordForm';
 import { getUserRole } from '../services/tokenService';
+import { useNotification } from '../context/NotificationContext';
 
 const PatientRecords = ({ patientId }) => {
   const { t } = useSimpleLanguage();
+  const { showNotification } = useNotification();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
-
+  
   const role = getUserRole();
 
-  // Function to fetch records
   const fetchRecords = async () => {
     setLoading(true);
     try {
@@ -33,9 +34,18 @@ const PatientRecords = ({ patientId }) => {
     fetchRecords();
   }, [patientId, t]);
 
-  // Instead of appending, re-fetch the records after adding a record
   const handleRecordAdded = () => {
     fetchRecords();
+  };
+
+  const handleDeleteRecord = async (recordId) => {
+    try {
+      await deletePatientRecord(patientId, recordId);
+      showNotification(t('recordDeletedSuccessfully') || "Record deleted successfully", "success");
+      fetchRecords();
+    } catch (err) {
+      showNotification(t('failedToDeleteRecord') || "Failed to delete record", "error");
+    }
   };
 
   return (
@@ -70,6 +80,17 @@ const PatientRecords = ({ patientId }) => {
               <Typography variant="body2">
                 {t('prescription')}: {record.prescription}
               </Typography>
+            )}
+            {role === 'doctor' && (
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                sx={{ mt: 1 }}
+                onClick={() => handleDeleteRecord(record.id)}
+              >
+                {t('deleteRecord') || "Delete"}
+              </Button>
             )}
           </Paper>
         ))
