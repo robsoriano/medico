@@ -383,17 +383,19 @@ def create_patient_record(patient_id):
     if not data:
         return jsonify({'error': 'Request must be JSON'}), 400
 
-    # Validate required fields: 'notes' and 'doctor' are required
-    if 'notes' not in data or 'doctor' not in data:
-        return jsonify({'error': 'Missing required fields: notes and doctor'}), 400
+    if 'notes' not in data:
+        return jsonify({'error': 'Missing required field: notes'}), 400
 
     try:
+        # Automatically assign doctor from the logged-in user's token
+        doctor = get_jwt_identity()
+
         new_record = PatientRecord(
             patient_id=patient_id,
-            doctor=data['doctor'].strip(),
+            doctor=doctor,
             notes=data['notes'].strip(),
-            diagnosis=data.get('diagnosis'),
-            prescription=data.get('prescription')
+            diagnosis=data.get('diagnosis', "").strip() or None,
+            prescription=data.get('prescription', "").strip() or None
         )
         db.session.add(new_record)
         db.session.commit()
@@ -411,8 +413,9 @@ def create_patient_record(patient_id):
         }), 201
     except Exception as e:
         db.session.rollback()
-        print("Error in create_patient_record:", e)  # Log the error to your server console
+        print("Error in create_patient_record:", e)
         return jsonify({'error': str(e)}), 500
+
 
 # Retrieve all records for a patient
 @app.route('/api/patients/<int:patient_id>/records', methods=['GET'])

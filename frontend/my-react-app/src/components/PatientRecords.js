@@ -12,13 +12,16 @@ const PatientRecords = ({ patientId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
-  
+
   const role = getUserRole();
 
+  // Function to fetch records
   const fetchRecords = async () => {
+    setLoading(true);
     try {
       const response = await getPatientRecords(patientId);
       setRecords(response.data);
+      setError('');
     } catch (err) {
       setError(t('failedToFetchRecords') || 'Failed to fetch records.');
     } finally {
@@ -30,8 +33,9 @@ const PatientRecords = ({ patientId }) => {
     fetchRecords();
   }, [patientId, t]);
 
-  const handleRecordAdded = (newRecord) => {
-    setRecords([...records, newRecord]);
+  // Instead of appending, re-fetch the records after adding a record
+  const handleRecordAdded = () => {
+    fetchRecords();
   };
 
   return (
@@ -87,4 +91,3 @@ const PatientRecords = ({ patientId }) => {
 };
 
 export default PatientRecords;
-
