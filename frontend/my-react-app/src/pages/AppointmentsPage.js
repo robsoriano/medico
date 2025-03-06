@@ -15,13 +15,13 @@ const AppointmentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Existing filter states for Appointment List tab
+  // Filter states for Appointment List tab
   const [filterDate, setFilterDate] = useState(null);
   const [filterDoctor, setFilterDoctor] = useState('');
   const [filterPatient, setFilterPatient] = useState('');
   
-  // New state for Daily Queue tab
-  const [dailyQueueDate, setDailyQueueDate] = useState(null);
+  // Daily Queue state with default set to current day
+  const [dailyQueueDate, setDailyQueueDate] = useState(new Date());
   const [dailyQueueAppointments, setDailyQueueAppointments] = useState([]);
 
   // Fetch appointments on component mount
@@ -45,8 +45,9 @@ const AppointmentsPage = () => {
     }
 
     if (filterPatient.trim()) {
+      // Assuming filterPatient can be used to match patient name (or part of it)
       filtered = filtered.filter(a => 
-        a.patient_id.toString().includes(filterPatient.trim())
+        a.patient_name && a.patient_name.toLowerCase().includes(filterPatient.trim().toLowerCase())
       );
     }
 
@@ -55,13 +56,9 @@ const AppointmentsPage = () => {
 
   // Filter appointments for Daily Queue tab when dailyQueueDate changes or appointments update
   useEffect(() => {
-    if (dailyQueueDate) {
-      const queueDateString = dailyQueueDate.toISOString().split('T')[0];
-      const dailyAppointments = appointments.filter(a => a.appointment_date === queueDateString);
-      setDailyQueueAppointments(dailyAppointments);
-    } else {
-      setDailyQueueAppointments([]);
-    }
+    const queueDateString = dailyQueueDate.toISOString().split('T')[0];
+    const dailyAppointments = appointments.filter(a => a.appointment_date === queueDateString);
+    setDailyQueueAppointments(dailyAppointments);
   }, [dailyQueueDate, appointments]);
 
   const fetchAppointments = async () => {
@@ -124,7 +121,7 @@ const AppointmentsPage = () => {
               margin="normal"
             />
             <TextField
-              label="Filter by Patient ID"
+              label="Filter by Patient Name"
               value={filterPatient}
               onChange={(e) => setFilterPatient(e.target.value)}
               fullWidth
@@ -142,7 +139,7 @@ const AppointmentsPage = () => {
                 {filteredAppointments.map((appointment) => (
                   <Box key={appointment.id} sx={{ mb: 2, borderBottom: '1px solid #ccc', pb: 1 }}>
                     <Typography>
-                      <strong>Patient ID:</strong> {appointment.patient_id}
+                      <strong>Patient:</strong> {appointment.patient_name}
                     </Typography>
                     <Typography>
                       <strong>Date:</strong> {appointment.appointment_date}
@@ -183,31 +180,27 @@ const AppointmentsPage = () => {
                 renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
               />
             </LocalizationProvider>
-            {dailyQueueDate ? (
-              dailyQueueAppointments.length > 0 ? (
-                <Paper sx={{ p: 2 }}>
-                  {dailyQueueAppointments.map((appointment) => (
-                    <Box key={appointment.id} sx={{ mb: 2, borderBottom: '1px solid #ccc', pb: 1 }}>
-                      <Typography>
-                        <strong>Patient ID:</strong> {appointment.patient_id}
-                      </Typography>
-                      <Typography>
-                        <strong>Date:</strong> {appointment.appointment_date}
-                      </Typography>
-                      <Typography>
-                        <strong>Time:</strong> {appointment.appointment_time}
-                      </Typography>
-                      <Typography>
-                        <strong>Doctor:</strong> {appointment.doctor}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Paper>
-              ) : (
-                <Typography>No appointments scheduled for this day.</Typography>
-              )
+            {dailyQueueAppointments.length > 0 ? (
+              <Paper sx={{ p: 2 }}>
+                {dailyQueueAppointments.map((appointment) => (
+                  <Box key={appointment.id} sx={{ mb: 2, borderBottom: '1px solid #ccc', pb: 1 }}>
+                    <Typography>
+                      <strong>Patient:</strong> {appointment.patient_name}
+                    </Typography>
+                    <Typography>
+                      <strong>Date:</strong> {appointment.appointment_date}
+                    </Typography>
+                    <Typography>
+                      <strong>Time:</strong> {appointment.appointment_time}
+                    </Typography>
+                    <Typography>
+                      <strong>Doctor:</strong> {appointment.doctor}
+                    </Typography>
+                  </Box>
+                ))}
+              </Paper>
             ) : (
-              <Typography>Select a day to view appointments.</Typography>
+              <Typography>No appointments scheduled for this day.</Typography>
             )}
           </Box>
         )}

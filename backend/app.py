@@ -306,28 +306,12 @@ def get_appointments():
         appointment_list = [{
             'id': a.id,
             'patient_id': a.patient_id,
+            'patient_name': f"{a.patient.first_name} {a.patient.last_name}" if a.patient else "",
             'appointment_date': a.appointment_date.isoformat(),
             'appointment_time': a.appointment_time.isoformat(),
             'doctor': a.doctor
         } for a in appointments]
         return jsonify(appointment_list), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/appointments/<int:appointment_id>', methods=['GET'])
-@jwt_required()
-def get_appointment(appointment_id):
-    try:
-        appointment = Appointment.query.get(appointment_id)
-        if not appointment:
-            return jsonify({'error': 'Appointment not found'}), 404
-        return jsonify({
-            'id': appointment.id,
-            'patient_id': appointment.patient_id,
-            'appointment_date': appointment.appointment_date.isoformat(),
-            'appointment_time': appointment.appointment_time.isoformat(),
-            'doctor': appointment.doctor
-        }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
