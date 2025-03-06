@@ -1,6 +1,6 @@
 // src/components/PatientRecords.js
 import React, { useEffect, useState } from 'react';
-import { Typography, Box, Paper, Button, TextField } from '@mui/material';
+import { Typography, Box, Paper, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { getPatientRecords, deletePatientRecord } from '../services/patientService';
 import { useSimpleLanguage } from '../context/SimpleLanguageContext';
 import PatientRecordForm from './PatientRecordForm';
@@ -19,6 +19,10 @@ const PatientRecords = ({ patientId }) => {
   const [viewingRecord, setViewingRecord] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   
+  // New state for deletion confirmation
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState(null);
+
   const role = getUserRole();
 
   const fetchRecords = async () => {
@@ -38,29 +42,27 @@ const PatientRecords = ({ patientId }) => {
     fetchRecords();
   }, [patientId, t]);
 
-  // Filter records based on the search query
-  const filteredRecords = records.filter((record) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      record.notes.toLowerCase().includes(query) ||
-      (record.diagnosis && record.diagnosis.toLowerCase().includes(query)) ||
-      (record.doctor && record.doctor.toLowerCase().includes(query))
-    );
-  });
-
   const handleRecordAdded = () => {
     fetchRecords();
     setEditingRecord(null);
     setViewingRecord(null);
   };
 
-  const handleDeleteRecord = async (recordId) => {
+  const confirmDeleteRecord = (recordId) => {
+    setRecordToDelete(recordId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteRecord = async () => {
     try {
-      await deletePatientRecord(patientId, recordId);
+      await deletePatientRecord(patientId, recordToDelete);
       showNotification(t('recordDeletedSuccessfully') || "Record deleted successfully", "success");
       fetchRecords();
     } catch (err) {
       showNotification(t('failedToDeleteRecord') || "Failed to delete record", "error");
+    } finally {
+      setDeleteDialogOpen(false);
+      setRecordToDelete(null);
     }
   };
 
@@ -73,12 +75,20 @@ const PatientRecords = ({ patientId }) => {
     setViewingRecord(record);
   };
 
+  const filteredRecords = records.filter((record) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      record.notes.toLowerCase().includes(query) ||
+      (record.diagnosis && record.diagnosis.toLowerCase().includes(query)) ||
+      (record.doctor && record.doctor.toLowerCase().includes(query))
+    );
+  });
+
   return (
     <Box sx={{ mt: 3 }}>
       <Typography variant="h6" gutterBottom>
         {t('patientRecords')}
       </Typography>
-      {/* Search Input */}
       <TextField
         label={t('searchRecords') || "Search Records"}
         value={searchQuery}
@@ -130,7 +140,7 @@ const PatientRecords = ({ patientId }) => {
                     color="error"
                     size="small"
                     sx={{ mr: 1 }}
-                    onClick={() => handleDeleteRecord(record.id)}
+                    onClick={() => confirmDeleteRecord(record.id)}
                   >
                     {t('deleteRecord') || "Delete"}
                   </Button>
@@ -164,6 +174,24 @@ const PatientRecords = ({ patientId }) => {
         open={Boolean(viewingRecord)}
         handleClose={() => setViewingRecord(null)}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>{t('confirmDeletion') || "Confirm Deletion"}</DialogTitle>
+        <DialogContent>
+          <Typography>
+            {t('confirmDeletionMessage') || "Are you sure you want to delete this record?"}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>
+            {t('cancel') || "Cancel"}
+          </Button>
+          <Button onClick={handleDeleteRecord} variant="contained" color="error">
+            {t('deleteRecord') || "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
