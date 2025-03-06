@@ -9,6 +9,7 @@ import { getUserName } from '../services/tokenService';
 import CurrentTime from '../components/CurrentTime';
 import { getAppointments } from '../services/appointmentService';
 import { useSimpleLanguage } from '../context/SimpleLanguageContext';
+import SimpleLanguageSwitcher from '../components/SimpleLanguageSwitcher';
 
 const SecretaryDashboard = () => {
   const navigate = useNavigate();
@@ -54,6 +55,7 @@ const SecretaryDashboard = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Medical CRM - Secretary Dashboard
           </Typography>
+          <SimpleLanguageSwitcher />
           <Button color="inherit" onClick={handleLogout}>Logout</Button>
         </Toolbar>
       </AppBar>
@@ -71,7 +73,7 @@ const SecretaryDashboard = () => {
       >
         <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 } }}>
           <Typography variant="h5" gutterBottom>
-            Welcome, {username}
+            {t('welcome')}, {username}
           </Typography>
           <CurrentTime />
           <Grid container spacing={3}>
@@ -116,7 +118,7 @@ const SecretaryDashboard = () => {
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: { xs: 2, md: 3 }, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
-                  Schedule Appointments
+                  {t('scheduleAppointments') || "Schedule Appointments"}
                 </Typography>
                 <Button variant="contained" component={Link} to="/appointments" sx={{ mt: 2 }}>
                   {t('manageAppointments') || "Manage Appointments"}
@@ -127,7 +129,7 @@ const SecretaryDashboard = () => {
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: { xs: 2, md: 3 }, height: { xs: 'auto', md: 240 } }}>
                 <Typography variant="h6" gutterBottom>
-                  Manage Patient Records
+                  {t('managePatientRecords') || "Manage Patient Records"}
                 </Typography>
                 <Button variant="contained" component={Link} to="/patients" sx={{ mt: 2 }}>
                   {t('viewPatientRecords') || "View Patient Files"}
