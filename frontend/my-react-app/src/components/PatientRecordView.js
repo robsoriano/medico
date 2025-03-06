@@ -10,8 +10,8 @@ const PatientRecordView = ({ record, open, handleClose }) => {
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>{t('recordDetails') || "Record Details"}</DialogTitle>
-      <DialogContent>
+      <DialogTitle>{t('recordDetails')}</DialogTitle>
+      <DialogContent dividers>
         <Typography variant="subtitle1">
           {t('recordDate')}: {new Date(record.record_date).toLocaleString()}
         </Typography>
@@ -31,9 +31,27 @@ const PatientRecordView = ({ record, open, handleClose }) => {
             {t('prescription')}: {record.prescription}
           </Typography>
         )}
+        {record.updated_by ? (
+  <Typography variant="body2" sx={{ mt: 1 }}>
+    {t('updatedBy')}: {record.updated_by}
+  </Typography>
+) : (
+  <Typography variant="body2" sx={{ mt: 1 }}>
+    {t('neverUpdated') || "Never updated"}
+  </Typography>
+)}
+{record.updated_at ? (
+  <Typography variant="body2">
+    {t('updatedAt')}: {new Date(record.updated_at).toLocaleString()}
+  </Typography>
+) : (
+  <Typography variant="body2">
+    {t('noUpdateDate') || "No update date"}
+  </Typography>
+        )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>{t('close') || "Close"}</Button>
+        <Button onClick={handleClose}>{t('close')}</Button>
       </DialogActions>
     </Dialog>
   );

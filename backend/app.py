@@ -457,8 +457,8 @@ def update_patient_record(patient_id, record_id):
             record.prescription = data.get('prescription', "").strip() or None
 
         # Set audit trail fields
-        record.updated_by = get_jwt_identity()  # Using the current logged-in user's identity
-        record.updated_at = datetime.utcnow()
+        record.updated_by = get_jwt_identity()  # Automatically use the current user's identity
+        record.updated_at = datetime.utcnow()     # Set the update timestamp
 
         db.session.commit()
         return jsonify({'message': 'Patient record updated successfully'}), 200
@@ -466,6 +466,7 @@ def update_patient_record(patient_id, record_id):
         db.session.rollback()
         print("Error in update_patient_record:", e)
         return jsonify({'error': str(e)}), 500
+
 
 # Delete a specific patient record (optional, or consider soft deletion)
 @app.route('/api/patients/<int:patient_id>/records/<int:record_id>', methods=['DELETE'])

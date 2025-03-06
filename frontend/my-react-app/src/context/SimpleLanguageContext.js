@@ -51,7 +51,11 @@ const translations = {
     editRecord: "Edit",
     deleteRecord: "Delete",
     addRecord: "Add Record",
-    searchRecords: "Search Records"
+    searchRecords: "Search Records",
+    updatedBy: "Updated by",
+    updatedAt: "Updated at",
+    recordDetails: "Record Details",
+    close: "Close"
   },
   es: {
     welcome: "Bienvenido",
@@ -74,35 +78,14 @@ const translations = {
     patientRecords: "Registros del Paciente",
     noRecordsFound: "No se encontraron registros.",
     recordDate: "Fecha del Registro",
-    doctor: "Doctor",
-    notes: "Notas",
-    diagnosis: "Diagnóstico",
-    prescription: "Receta",
-    addRecord: "Agregar Registro",
-    email: "Correo electrónico",
-    age: "Edad",
-    birthDate: "Fecha de nacimiento",
-    homeAddress: "Dirección",
-    homePhone: "Teléfono de casa",
-    personalPhone: "Teléfono personal",
-    occupation: "Ocupación",
-    medicalInsurance: "Seguro médico",
-    backToPatientList: "Volver a la lista de pacientes",
-    editPatient: "Editar paciente",
-    deleteRecord: "Eliminar",
-    viewRecord: "Ver",
-    recordDetails: "Detalles del Registro",
-    close: "Cerrar",
-    patientRecords: "Registros del Paciente",
-    recordDate: "Fecha del Registro",
-    doctor: "Doctor",
-    notes: "Notas",
-    diagnosis: "Diagnóstico",
-    prescription: "Receta",
     editRecord: "Editar",
     deleteRecord: "Eliminar",
     addRecord: "Agregar Registro",
-    searchRecords: "Buscar Registros"
+    searchRecords: "Buscar Registros",
+    updatedBy: "Actualizado por",
+    updatedAt: "Actualizado a las",
+    recordDetails: "Detalles del Registro",
+    close: "Cerrar"
   }
 };
 
