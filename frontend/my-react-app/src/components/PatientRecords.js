@@ -1,6 +1,6 @@
 // src/components/PatientRecords.js
 import React, { useEffect, useState } from 'react';
-import { Typography, Box, Paper, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Typography, Box, Paper, Button, TextField, Pagination } from '@mui/material';
 import { getPatientRecords, deletePatientRecord } from '../services/patientService';
 import { useSimpleLanguage } from '../context/SimpleLanguageContext';
 import PatientRecordForm from './PatientRecordForm';
@@ -19,9 +19,9 @@ const PatientRecords = ({ patientId }) => {
   const [viewingRecord, setViewingRecord] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // New state for deletion confirmation
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [recordToDelete, setRecordToDelete] = useState(null);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5; // Adjust as needed
 
   const role = getUserRole();
 
@@ -42,27 +42,42 @@ const PatientRecords = ({ patientId }) => {
     fetchRecords();
   }, [patientId, t]);
 
+  // Filter records based on the search query
+  const filteredRecords = records.filter((record) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      record.notes.toLowerCase().includes(query) ||
+      (record.diagnosis && record.diagnosis.toLowerCase().includes(query)) ||
+      (record.doctor && record.doctor.toLowerCase().includes(query))
+    );
+  });
+
+  // Pagination calculations
+  const pageCount = Math.ceil(filteredRecords.length / pageSize);
+  const paginatedRecords = filteredRecords.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   const handleRecordAdded = () => {
     fetchRecords();
     setEditingRecord(null);
     setViewingRecord(null);
+    setCurrentPage(1); // Reset to first page on update
   };
 
   const confirmDeleteRecord = (recordId) => {
-    setRecordToDelete(recordId);
-    setDeleteDialogOpen(true);
+    // We'll assume the confirmation dialog is handled elsewhere (or you could integrate one)
+    handleDeleteRecord(recordId);
   };
 
-  const handleDeleteRecord = async () => {
+  const handleDeleteRecord = async (recordId) => {
     try {
-      await deletePatientRecord(patientId, recordToDelete);
+      await deletePatientRecord(patientId, recordId);
       showNotification(t('recordDeletedSuccessfully') || "Record deleted successfully", "success");
       fetchRecords();
     } catch (err) {
       showNotification(t('failedToDeleteRecord') || "Failed to delete record", "error");
-    } finally {
-      setDeleteDialogOpen(false);
-      setRecordToDelete(null);
     }
   };
 
@@ -75,15 +90,6 @@ const PatientRecords = ({ patientId }) => {
     setViewingRecord(record);
   };
 
-  const filteredRecords = records.filter((record) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      record.notes.toLowerCase().includes(query) ||
-      (record.diagnosis && record.diagnosis.toLowerCase().includes(query)) ||
-      (record.doctor && record.doctor.toLowerCase().includes(query))
-    );
-  });
-
   return (
     <Box sx={{ mt: 3 }}>
       <Typography variant="h6" gutterBottom>
@@ -92,7 +98,7 @@ const PatientRecords = ({ patientId }) => {
       <TextField
         label={t('searchRecords') || "Search Records"}
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
         fullWidth
         margin="normal"
       />
@@ -103,59 +109,69 @@ const PatientRecords = ({ patientId }) => {
       ) : filteredRecords.length === 0 ? (
         <Typography>{t('noRecordsFound')}</Typography>
       ) : (
-        filteredRecords.map((record) => (
-          <Paper key={record.id} sx={{ p: 2, mb: 2 }}>
-            <Typography variant="subtitle1">
-              {t('recordDate')}: {new Date(record.record_date).toLocaleString()}
-            </Typography>
-            <Typography variant="body2">
-              {t('doctor')}: {record.doctor}
-            </Typography>
-            <Typography variant="body2">
-              {t('notes')}: {record.notes}
-            </Typography>
-            {record.diagnosis && (
-              <Typography variant="body2">
-                {t('diagnosis')}: {record.diagnosis}
+        <>
+          {paginatedRecords.map((record) => (
+            <Paper key={record.id} sx={{ p: 2, mb: 2 }}>
+              <Typography variant="subtitle1">
+                {t('recordDate')}: {new Date(record.record_date).toLocaleString()}
               </Typography>
-            )}
-            {record.prescription && (
               <Typography variant="body2">
-                {t('prescription')}: {record.prescription}
+                {t('doctor')}: {record.doctor}
               </Typography>
-            )}
-            <Box sx={{ mt: 1 }}>
-              {role === 'doctor' && (
-                <>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ mr: 1 }}
-                    onClick={() => handleEditRecord(record)}
-                  >
-                    {t('editRecord') || "Edit"}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="small"
-                    sx={{ mr: 1 }}
-                    onClick={() => confirmDeleteRecord(record.id)}
-                  >
-                    {t('deleteRecord') || "Delete"}
-                  </Button>
-                </>
+              <Typography variant="body2">
+                {t('notes')}: {record.notes}
+              </Typography>
+              {record.diagnosis && (
+                <Typography variant="body2">
+                  {t('diagnosis')}: {record.diagnosis}
+                </Typography>
               )}
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => handleViewRecord(record)}
-              >
-                {t('viewRecord') || "View"}
-              </Button>
-            </Box>
-          </Paper>
-        ))
+              {record.prescription && (
+                <Typography variant="body2">
+                  {t('prescription')}: {record.prescription}
+                </Typography>
+              )}
+              <Box sx={{ mt: 1 }}>
+                {role === 'doctor' && (
+                  <>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{ mr: 1 }}
+                      onClick={() => handleEditRecord(record)}
+                    >
+                      {t('editRecord') || "Edit"}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      sx={{ mr: 1 }}
+                      onClick={() => confirmDeleteRecord(record.id)}
+                    >
+                      {t('deleteRecord') || "Delete"}
+                    </Button>
+                  </>
+                )}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleViewRecord(record)}
+                >
+                  {t('viewRecord') || "View"}
+                </Button>
+              </Box>
+            </Paper>
+          ))}
+          {pageCount > 1 && (
+            <Pagination
+              count={pageCount}
+              page={currentPage}
+              onChange={(e, value) => setCurrentPage(value)}
+              sx={{ mt: 2 }}
+            />
+          )}
+        </>
       )}
       {role === 'doctor' && (
         <Button variant="contained" sx={{ mt: 2 }} onClick={() => { setEditingRecord(null); setFormOpen(true); }}>
@@ -174,24 +190,6 @@ const PatientRecords = ({ patientId }) => {
         open={Boolean(viewingRecord)}
         handleClose={() => setViewingRecord(null)}
       />
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>{t('confirmDeletion') || "Confirm Deletion"}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {t('confirmDeletionMessage') || "Are you sure you want to delete this record?"}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>
-            {t('cancel') || "Cancel"}
-          </Button>
-          <Button onClick={handleDeleteRecord} variant="contained" color="error">
-            {t('deleteRecord') || "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
