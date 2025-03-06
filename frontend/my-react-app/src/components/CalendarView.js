@@ -21,7 +21,6 @@ const localizer = dateFnsLocalizer({
 });
 
 // These styles override react-big-calendar’s defaults for dark mode
-// Adjust colors as needed for better contrast
 const darkModeOverrides = `
   .rbc-calendar {
     background-color: #212121 !important;
@@ -69,14 +68,12 @@ const CalendarView = () => {
       try {
         const response = await getAppointments();
         // Transform the appointments data to calendar events
+        // Using patient_name for the event title
         const events = response.data.map((appointment) => ({
           id: appointment.id,
-          title: `Dr. ${appointment.doctor}`,
+          title: appointment.patient_name,  // Changed from `Dr. ${appointment.doctor}`
           start: new Date(`${appointment.appointment_date}T${appointment.appointment_time}`),
-          end: new Date(
-            new Date(`${appointment.appointment_date}T${appointment.appointment_time}`).getTime() +
-              30 * 60000
-          ), // assume 30 minute duration
+          end: new Date(new Date(`${appointment.appointment_date}T${appointment.appointment_time}`).getTime() + 30 * 60000), // assume 30 minute duration
           allDay: false,
         }));
         setAppointments(events);
