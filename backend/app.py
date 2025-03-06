@@ -8,7 +8,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate  
 import re
 from datetime import timedelta, datetime
-from models import db, User, Patient, Appointment, PatientRecord  # Make sure Appointment is imported from models
+from models import db, User, Patient, Appointment, PatientRecord  # Make sure Appointment and PatientRecord are imported
 
 app = Flask(__name__)
 
@@ -147,8 +147,6 @@ def add_patient():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-
-
 @app.route('/api/patients', methods=['GET'])
 @jwt_required()
 def get_patients():
@@ -214,7 +212,6 @@ def update_patient(patient_id):
         if not patient:
             return jsonify({'error': 'Patient not found'}), 404
 
-        # Allow updating first_name, last_name, email, and optionally other fields.
         if 'first_name' in data:
             if not isinstance(data['first_name'], str) or not data['first_name'].strip():
                 return jsonify({'error': 'First name must be a non-empty string'}), 400
@@ -227,7 +224,6 @@ def update_patient(patient_id):
             if not isinstance(data['email'], str) or not is_valid_email(data['email']):
                 return jsonify({'error': 'Invalid email format'}), 400
             patient.email = data['email'].strip()
-        # Optionally update other fields without strict validation
         if 'age' in data:
             patient.age = data['age']
         if 'birth_date' in data:
@@ -416,7 +412,6 @@ def create_patient_record(patient_id):
         print("Error in create_patient_record:", e)
         return jsonify({'error': str(e)}), 500
 
-
 # Retrieve all records for a patient
 @app.route('/api/patients/<int:patient_id>/records', methods=['GET'])
 @jwt_required()
@@ -429,7 +424,9 @@ def get_patient_records(patient_id):
             'notes': record.notes,
             'diagnosis': record.diagnosis,
             'prescription': record.prescription,
-            'record_date': record.record_date.isoformat()
+            'record_date': record.record_date.isoformat() if record.record_date else None,
+            'updated_by': record.updated_by,
+            'updated_at': record.updated_at.isoformat() if record.updated_at else None
         } for record in records]
         return jsonify(record_list), 200
     except Exception as e:
@@ -467,8 +464,7 @@ def update_patient_record(patient_id, record_id):
         print("Error in update_patient_record:", e)
         return jsonify({'error': str(e)}), 500
 
-
-# Delete a specific patient record (optional, or consider soft deletion)
+# Delete a specific patient record
 @app.route('/api/patients/<int:patient_id>/records/<int:record_id>', methods=['DELETE'])
 @jwt_required()
 def delete_patient_record(patient_id, record_id):
