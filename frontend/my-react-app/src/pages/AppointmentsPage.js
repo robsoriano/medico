@@ -1,6 +1,6 @@
 // src/pages/AppointmentsPage.js
 import React, { useState, useEffect } from 'react';
-import { Container, Tabs, Tab, Box, Typography, Paper, TextField, Button } from '@mui/material';
+import { Container, Tabs, Tab, Box, Typography, Paper, TextField, Button, Pagination } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import AppointmentForm from '../components/AppointmentForm';
@@ -23,20 +23,10 @@ const AppointmentsPage = () => {
   // Daily Queue state with default set to current day
   const [dailyQueueDate, setDailyQueueDate] = useState(new Date());
   const [dailyQueueAppointments, setDailyQueueAppointments] = useState([]);
-
-  // Function to fetch appointments from API
-  const fetchAppointments = async () => {
-    setLoading(true);
-    try {
-      const response = await getAppointments();
-      setAppointments([...response.data]); // Force a new array instance
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching appointments:", err);
-      setError('Failed to fetch appointments.');
-      setLoading(false);
-    }
-  };
+  
+  // Pagination state for Daily Queue only
+  const [dailyQueuePage, setDailyQueuePage] = useState(1);
+  const dailyQueuePageSize = 5;
 
   // Fetch appointments on component mount
   useEffect(() => {
@@ -59,7 +49,7 @@ const AppointmentsPage = () => {
     }
 
     if (filterPatient.trim()) {
-      // Assuming filterPatient now refers to patient name
+      // Assuming filterPatient refers to patient name
       filtered = filtered.filter(a => 
         a.patient_name && a.patient_name.toLowerCase().includes(filterPatient.trim().toLowerCase())
       );
@@ -70,10 +60,25 @@ const AppointmentsPage = () => {
 
   // Filter appointments for Daily Queue tab when dailyQueueDate changes or appointments update
   useEffect(() => {
+    if (!dailyQueueDate) return;
     const queueDateString = dailyQueueDate.toISOString().split('T')[0];
-    const dailyAppointments = appointments.filter(a => a.appointment_date === queueDateString);
-    setDailyQueueAppointments(dailyAppointments);
+    const daily = appointments.filter(a => a.appointment_date === queueDateString);
+    setDailyQueueAppointments(daily);
+    setDailyQueuePage(1); // Reset to first page when date changes
   }, [dailyQueueDate, appointments]);
+
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const response = await getAppointments();
+      setAppointments([...response.data]); // Force a new array instance
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching appointments:", err);
+      setError('Failed to fetch appointments.');
+      setLoading(false);
+    }
+  };
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -83,7 +88,7 @@ const AppointmentsPage = () => {
   const handleAppointmentSubmit = async (appointmentData) => {
     try {
       await addAppointment(appointmentData);
-      // Instead of appending, re-fetch appointments to update both Appointment List and Daily Queue
+      // Re-fetch appointments so that both Appointment List and Daily Queue update
       fetchAppointments();
       setTabValue(0);
     } catch (err) {
@@ -91,6 +96,12 @@ const AppointmentsPage = () => {
       setError('Failed to add appointment.');
     }
   };
+
+  // Pagination calculations for Daily Queue tab only
+  const dailyQueuePageCount = Math.ceil(dailyQueueAppointments.length / dailyQueuePageSize);
+  const startIndex = (dailyQueuePage - 1) * dailyQueuePageSize;
+  const endIndex = startIndex + dailyQueuePageSize;
+  const dailyQueuePaginated = dailyQueueAppointments.slice(startIndex, endIndex);
 
   return (
     <Container sx={{ mt: 4, mb: 4 }}>
@@ -183,24 +194,34 @@ const AppointmentsPage = () => {
               />
             </LocalizationProvider>
             {dailyQueueAppointments.length > 0 ? (
-              <Paper sx={{ p: 2 }}>
-                {dailyQueueAppointments.map((appointment) => (
-                  <Box key={appointment.id} sx={{ mb: 2, borderBottom: '1px solid #ccc', pb: 1 }}>
-                    <Typography>
-                      <strong>Patient:</strong> {appointment.patient_name}
-                    </Typography>
-                    <Typography>
-                      <strong>Date:</strong> {appointment.appointment_date}
-                    </Typography>
-                    <Typography>
-                      <strong>Time:</strong> {appointment.appointment_time}
-                    </Typography>
-                    <Typography>
-                      <strong>Doctor:</strong> {appointment.doctor}
-                    </Typography>
-                  </Box>
-                ))}
-              </Paper>
+              <>
+                <Paper sx={{ p: 2 }}>
+                  {dailyQueuePaginated.map((appointment) => (
+                    <Box key={appointment.id} sx={{ mb: 2, borderBottom: '1px solid #ccc', pb: 1 }}>
+                      <Typography variant="body2">
+                        <strong>Patient:</strong> {appointment.patient_name}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Date:</strong> {appointment.appointment_date}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Time:</strong> {appointment.appointment_time}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Doctor:</strong> {appointment.doctor}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Paper>
+                {dailyQueuePageCount > 1 && (
+                  <Pagination
+                    count={dailyQueuePageCount}
+                    page={dailyQueuePage}
+                    onChange={(event, value) => setDailyQueuePage(value)}
+                    sx={{ mt: 2 }}
+                  />
+                )}
+              </>
             ) : (
               <Typography>No appointments scheduled for this day.</Typography>
             )}
