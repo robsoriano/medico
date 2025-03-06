@@ -24,6 +24,20 @@ const AppointmentsPage = () => {
   const [dailyQueueDate, setDailyQueueDate] = useState(new Date());
   const [dailyQueueAppointments, setDailyQueueAppointments] = useState([]);
 
+  // Function to fetch appointments from API
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const response = await getAppointments();
+      setAppointments([...response.data]); // Force a new array instance
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching appointments:", err);
+      setError('Failed to fetch appointments.');
+      setLoading(false);
+    }
+  };
+
   // Fetch appointments on component mount
   useEffect(() => {
     fetchAppointments();
@@ -45,7 +59,7 @@ const AppointmentsPage = () => {
     }
 
     if (filterPatient.trim()) {
-      // Assuming filterPatient can be used to match patient name (or part of it)
+      // Assuming filterPatient now refers to patient name
       filtered = filtered.filter(a => 
         a.patient_name && a.patient_name.toLowerCase().includes(filterPatient.trim().toLowerCase())
       );
@@ -61,19 +75,6 @@ const AppointmentsPage = () => {
     setDailyQueueAppointments(dailyAppointments);
   }, [dailyQueueDate, appointments]);
 
-  const fetchAppointments = async () => {
-    setLoading(true);
-    try {
-      const response = await getAppointments();
-      setAppointments([...response.data]); // Force a new array instance
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching appointments:", err);
-      setError('Failed to fetch appointments.');
-      setLoading(false);
-    }
-  };
-
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
     setError('');
@@ -81,8 +82,9 @@ const AppointmentsPage = () => {
 
   const handleAppointmentSubmit = async (appointmentData) => {
     try {
-      const response = await addAppointment(appointmentData);
-      setAppointments([...appointments, response.data]);
+      await addAppointment(appointmentData);
+      // Instead of appending, re-fetch appointments to update both Appointment List and Daily Queue
+      fetchAppointments();
       setTabValue(0);
     } catch (err) {
       console.error(err);
