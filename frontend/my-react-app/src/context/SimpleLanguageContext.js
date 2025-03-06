@@ -49,7 +49,10 @@ const translations = {
     confirmDeletionMessage: "Are you sure you want to delete this record?",
     cancel: "Cancel",
     recordDeletedSuccessfully: "Record deleted successfully",
-    failedToDeleteRecord: "Failed to delete record"
+    failedToDeleteRecord: "Failed to delete record",
+    manageAppointments: "Manage Appointments",
+    viewPatientRecords: "View Patient Records",
+    managePatientRecords: "Manage Patient Records",
   },
   es: {
     welcome: "Bienvenido",
@@ -98,7 +101,10 @@ const translations = {
     confirmDeletionMessage: "¿Está seguro de que desea eliminar este registro?",
     cancel: "Cancelar",
     recordDeletedSuccessfully: "Registro eliminado exitosamente",
-    failedToDeleteRecord: "Error al eliminar el registro"
+    failedToDeleteRecord: "Error al eliminar el registro",
+    manageAppointments: "Gestionar Citas",
+    viewPatientRecords: "Ver Expedientes de Pacientes",
+    managePatientRecords: "Gestionar Expedientes de Pacientes",
   }
 };
 
