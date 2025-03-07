@@ -131,10 +131,13 @@ const SecretaryDashboard = () => {
                 ) : dailyQueuePaginated.length > 0 ? (
                   <>
                     {dailyQueuePaginated.map((appointment) => (
-                      <Paper key={appointment.id} sx={{ p: 2, mb: 2 }}>
+                      <Paper
+                        key={appointment.id}
+                        sx={{ p: 2, mb: 2, cursor: 'pointer' }}
+                        onClick={() => navigate(`/appointments/${appointment.id}`)}
+                      >
                         <Typography variant="subtitle1">
-                          <strong>{t('patientRecords') === "Patient Records" ? "Patient:" : t('patientId')} </strong>
-                          {appointment.patient_name}
+                          <strong>{t('patientRecords') === "Patient Records" ? "Patient:" : t('patientId')}</strong> {appointment.patient_name}
                         </Typography>
                         <Typography variant="body2">
                           <strong>{t('recordDate')}: </strong> {appointment.appointment_date}
@@ -191,3 +194,4 @@ const SecretaryDashboard = () => {
 };
 
 export default SecretaryDashboard;
+

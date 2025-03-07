@@ -9,4 +9,7 @@ export const addAppointment = (appointmentData) => {
   return API.post('/appointments', appointmentData);
 };
 
+export const getAppointment = (id) => API.get(`/appointments/${id}`);
+
+
 // You can later add update and delete functions as needed

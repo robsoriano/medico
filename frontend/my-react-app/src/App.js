@@ -11,11 +11,13 @@ import PatientDetail from "./pages/PatientDetail";
 import PatientEdit from "./pages/PatientEdit"; // Newly created edit page
 import AppointmentsPage from "./pages/AppointmentsPage";  
 import CalendarView from "./components/CalendarView"; // Directly using CalendarView.js
+import AppointmentDetail from "./pages/AppointmentDetail"; // New: AppointmentDetail from components
 import { NotificationProvider } from "./context/NotificationContext";
 import { SimpleLanguageProvider } from "./context/SimpleLanguageContext";
 import { IconButton } from "@mui/material";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
+import AppointmentPage from "./pages/AppointmentDetail";
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ element }) => {
@@ -83,7 +85,10 @@ function App() {
             <Route path="/patients/:id/edit" element={<PrivateRoute element={<PatientEdit />} />} />
             <Route path="/appointments" element={<PrivateRoute element={<AppointmentsPage />} />} />
             <Route path="/appointments/calendar" element={<PrivateRoute element={<CalendarView />} />} />
+            {/* New AppointmentDetail route */}
+            <Route path="/appointments/:id" element={<PrivateRoute element={<AppointmentDetail />} />} />
             <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/appointments/:id" element={<PrivateRoute element={<AppointmentPage />} />} />
           </Routes>
           {/* Dark Mode Toggle Button */}
           <IconButton

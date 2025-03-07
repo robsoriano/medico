@@ -5,7 +5,7 @@ import { format, parse, startOfWeek, getDay } from 'date-fns';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { getAppointments } from '../services/appointmentService';
 import { Button } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 
 const locales = {
@@ -20,7 +20,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-// These styles override react-big-calendar’s defaults for dark mode
+// Dark mode CSS overrides
 const darkModeOverrides = `
   .rbc-calendar {
     background-color: #212121 !important;
@@ -62,18 +62,21 @@ const CalendarView = () => {
   const [error, setError] = useState('');
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
         const response = await getAppointments();
-        // Transform the appointments data to calendar events
-        // Using patient_name for the event title
+        // Transform the appointments data to calendar events using patient_name for the title
         const events = response.data.map((appointment) => ({
           id: appointment.id,
-          title: appointment.patient_name,  // Changed from `Dr. ${appointment.doctor}`
+          title: appointment.patient_name,
           start: new Date(`${appointment.appointment_date}T${appointment.appointment_time}`),
-          end: new Date(new Date(`${appointment.appointment_date}T${appointment.appointment_time}`).getTime() + 30 * 60000), // assume 30 minute duration
+          end: new Date(
+            new Date(`${appointment.appointment_date}T${appointment.appointment_time}`).getTime() +
+              30 * 60000
+          ), // assume 30 minute duration
           allDay: false,
         }));
         setAppointments(events);
@@ -92,9 +95,7 @@ const CalendarView = () => {
 
   return (
     <div style={{ margin: '20px' }}>
-      {/* Inject dark mode CSS overrides if dark mode is active */}
       {isDarkMode && <style>{darkModeOverrides}</style>}
-
       <Button variant="outlined" component={Link} to="/dashboard" sx={{ mb: 2 }}>
         Back to Dashboard
       </Button>
@@ -104,6 +105,7 @@ const CalendarView = () => {
           events={appointments}
           startAccessor="start"
           endAccessor="end"
+          onSelectEvent={(event) => navigate(`/appointments/${event.id}`)}
           style={{ height: '100%' }}
         />
       </div>

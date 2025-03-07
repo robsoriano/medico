@@ -315,6 +315,25 @@ def get_appointments():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/appointments/<int:appointment_id>', methods=['GET'])
+@jwt_required()
+def get_appointment(appointment_id):
+    try:
+        appointment = Appointment.query.get(appointment_id)
+        if not appointment:
+            return jsonify({'error': 'Appointment not found'}), 404
+        return jsonify({
+            'id': appointment.id,
+            'patient_id': appointment.patient_id,
+            'patient_name': f"{appointment.patient.first_name} {appointment.patient.last_name}" if appointment.patient else "",
+            'appointment_date': appointment.appointment_date.isoformat(),
+            'appointment_time': appointment.appointment_time.isoformat(),
+            'doctor': appointment.doctor
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/appointments/<int:appointment_id>', methods=['PUT'])
 @jwt_required()
 def update_appointment(appointment_id):
