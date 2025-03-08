@@ -70,6 +70,9 @@ const DoctorDashboard = () => {
   const endIndex = startIndex + dailyQueuePageSize;
   const dailyQueuePaginated = dailyQueueAppointments.slice(startIndex, endIndex);
 
+  // Quick Stats: count of today's appointments
+  const todayAppointmentsCount = dailyQueueAppointments.length;
+
   return (
     <Box sx={{ display: "flex" }}>
       <AppBar position="absolute">
@@ -101,6 +104,20 @@ const DoctorDashboard = () => {
           </Typography>
           <CurrentTime />
 
+          {/* Quick Stats Section */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  {t('quickStats') || "Quick Stats"}
+                </Typography>
+                <Typography variant="body1">
+                  {t('todayAppointments') || "Today's Appointments"}: {todayAppointmentsCount}
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+
           <Grid container spacing={3}>
             {/* Daily Queue Section with Pagination */}
             <Grid item xs={12}>
@@ -129,8 +146,7 @@ const DoctorDashboard = () => {
                         onClick={() => navigate(`/appointments/${appointment.id}`)}
                       >
                         <Typography variant="subtitle1">
-                          <strong>{t('patientRecords') === "Patient Records" ? "Patient:" : t('patientId')} </strong>
-                          {appointment.patient_name}
+                          <strong>{t('patientId')}:</strong> {appointment.patient_name}
                         </Typography>
                         <Typography variant="body2">
                           <strong>{t('recordDate')}: </strong> {appointment.appointment_date}
@@ -157,7 +173,6 @@ const DoctorDashboard = () => {
                 )}
               </Paper>
             </Grid>
-
             {/* Patient Files Section */}
             <Grid item xs={12} md={4}>
               <Paper sx={{ p: 2, height: { xs: 'auto', md: 240 } }}>
@@ -169,7 +184,6 @@ const DoctorDashboard = () => {
                 </Button>
               </Paper>
             </Grid>
-
             {/* Calendar View Section */}
             <Grid item xs={12} md={8}>
               <Paper sx={{ p: 2, height: { xs: 'auto', md: 240 } }}>
