@@ -64,7 +64,7 @@ const DoctorDashboard = () => {
     fetchDailyAppointments();
   }, [dailyQueueDate, t]);
 
-  // Pagination calculations
+  // Pagination calculations for Daily Queue
   const dailyQueuePageCount = Math.ceil(dailyQueueAppointments.length / dailyQueuePageSize);
   const startIndex = (dailyQueuePage - 1) * dailyQueuePageSize;
   const endIndex = startIndex + dailyQueuePageSize;
@@ -95,14 +95,14 @@ const DoctorDashboard = () => {
           px: { xs: 2, sm: 4, md: 6 },
         }}
       >
-        <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 } }}>
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Typography variant="h5" gutterBottom>
             {t('welcome')}, {username}
           </Typography>
           <CurrentTime />
 
           <Grid container spacing={3}>
-            {/* Daily Queue Section */}
+            {/* Daily Queue Section with Pagination */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2, mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
@@ -121,20 +121,25 @@ const DoctorDashboard = () => {
                 ) : appointmentsError ? (
                   <Typography color="error">{appointmentsError}</Typography>
                 ) : dailyQueuePaginated.length > 0 ? (
-                  <Box sx={{ mt: 2 }}>
+                  <>
                     {dailyQueuePaginated.map((appointment) => (
-                      <Paper key={appointment.id} sx={{ p: 2, mb: 2 }}>
+                      <Paper
+                        key={appointment.id}
+                        sx={{ p: 2, mb: 2, cursor: 'pointer' }}
+                        onClick={() => navigate(`/appointments/${appointment.id}`)}
+                      >
                         <Typography variant="subtitle1">
-                          <strong>Patient:</strong> {appointment.patient_name}
+                          <strong>{t('patientRecords') === "Patient Records" ? "Patient:" : t('patientId')} </strong>
+                          {appointment.patient_name}
                         </Typography>
                         <Typography variant="body2">
-                          <strong>Date:</strong> {appointment.appointment_date}
+                          <strong>{t('recordDate')}: </strong> {appointment.appointment_date}
                         </Typography>
                         <Typography variant="body2">
-                          <strong>Time:</strong> {appointment.appointment_time}
+                          <strong>{t('time')}: </strong> {appointment.appointment_time}
                         </Typography>
                         <Typography variant="body2">
-                          <strong>Doctor:</strong> {appointment.doctor}
+                          <strong>{t('doctor')}: </strong> {appointment.doctor}
                         </Typography>
                       </Paper>
                     ))}
@@ -146,7 +151,7 @@ const DoctorDashboard = () => {
                         sx={{ mt: 2 }}
                       />
                     )}
-                  </Box>
+                  </>
                 ) : (
                   <Typography>{t('noAppointmentsScheduled')}</Typography>
                 )}
