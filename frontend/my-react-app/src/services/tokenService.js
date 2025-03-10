@@ -26,3 +26,15 @@ export const getUserName = () => {
   }
   return "User";
 };
+
+export const getUserId = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  try {
+    const decoded = jwtDecode(token);
+    return decoded.sub || decoded.id; // Adjust according to how you store the user id in your token payload.
+  } catch (error) {
+    console.error("Failed to decode token:", error);
+    return null;
+  }
+};
