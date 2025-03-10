@@ -482,6 +482,76 @@ def delete_patient_record(patient_id, record_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+#message
+@app.route('/api/messages', methods=['POST'])
+@jwt_required()
+def send_message():
+    data = request.get_json()
+    if not data or 'recipient_id' not in data or 'content' not in data:
+        return jsonify({'error': 'Missing required fields: recipient_id, content'}), 400
+    
+    try:
+        sender_id = get_jwt_identity()  # Assuming the JWT identity is the user ID
+        new_message = Message(
+            sender_id=sender_id,
+            recipient_id=data['recipient_id'],
+            content=data['content'].strip()
+        )
+        db.session.add(new_message)
+        db.session.commit()
+        return jsonify({
+            'message': 'Message sent successfully',
+            'message_id': new_message.id,
+            'created_at': new_message.created_at.isoformat()
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/messages', methods=['GET'])
+@jwt_required()
+def get_messages():
+    current_user = get_jwt_identity()
+    # Expect a query parameter 'user_id' representing the conversation partner
+    partner_id = request.args.get('user_id', type=int)
+    if not partner_id:
+        return jsonify({'error': 'Missing required query parameter: user_id'}), 400
+    
+    try:
+        messages = Message.query.filter(
+            ((Message.sender_id == current_user) & (Message.recipient_id == partner_id)) |
+            ((Message.sender_id == partner_id) & (Message.recipient_id == current_user))
+        ).order_by(Message.created_at.asc()).all()
+        message_list = [{
+            'id': m.id,
+            'sender_id': m.sender_id,
+            'recipient_id': m.recipient_id,
+            'content': m.content,
+            'created_at': m.created_at.isoformat(),
+            'read': m.read
+        } for m in messages]
+        return jsonify(message_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/messages/<int:message_id>', methods=['PUT'])
+@jwt_required()
+def mark_message_read(message_id):
+    data = request.get_json()
+    if not data or 'read' not in data:
+        return jsonify({'error': 'Missing required field: read'}), 400
+
+    try:
+        message = Message.query.get(message_id)
+        if not message:
+            return jsonify({'error': 'Message not found'}), 404
+        message.read = data['read']
+        db.session.commit()
+        return jsonify({'message': 'Message updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 # A simple home route
 @app.route('/')

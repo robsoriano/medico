@@ -60,3 +60,14 @@ class PatientRecord(db.Model):
 
     def __repr__(self):
         return f'<PatientRecord {self.id} for patient {self.patient_id}>'
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, nullable=False)        # ID of the user sending the message
+    recipient_id = db.Column(db.Integer, nullable=False)     # ID of the recipient
+    content = db.Column(db.Text, nullable=False)             # Message content
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Timestamp of creation
+    read = db.Column(db.Boolean, default=False)              # Read status
+
+    def __repr__(self):
+        return f'<Message {self.id} from {self.sender_id} to {self.recipient_id}>'
