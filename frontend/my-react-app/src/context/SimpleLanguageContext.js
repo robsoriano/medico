@@ -51,8 +51,19 @@ const translations = {
     recordDeletedSuccessfully: "Record deleted successfully",
     failedToDeleteRecord: "Failed to delete record",
     manageAppointments: "Manage Appointments",
-    viewPatientRecords: "View Patient Records",
     managePatientRecords: "Manage Patient Records",
+
+    // Additional keys for messaging and appointment details:
+    internalMessaging: "Internal Messaging",
+    loadingMessages: "Loading messages...",
+    failedToFetchMessages: "Failed to fetch messages.",
+    failedToSendMessage: "Failed to send message.",
+    enterMessage: "Enter your message",
+    send: "Send",
+    you: "You",
+    partner: "Partner",
+    appointmentDetails: "Appointment Details",
+    back: "Back"
   },
   es: {
     welcome: "Bienvenido",
@@ -105,6 +116,18 @@ const translations = {
     manageAppointments: "Gestionar Citas",
     viewPatientRecords: "Ver Expedientes de Pacientes",
     managePatientRecords: "Gestionar Expedientes de Pacientes",
+
+    // Additional keys for messaging and appointment details:
+    internalMessaging: "Mensajería Interna",
+    loadingMessages: "Cargando mensajes...",
+    failedToFetchMessages: "Error al cargar los mensajes.",
+    failedToSendMessage: "Error al enviar el mensaje.",
+    enterMessage: "Ingrese su mensaje",
+    send: "Enviar",
+    you: "Tú",
+    partner: "Compañero",
+    appointmentDetails: "Detalles de la Cita",
+    back: "Volver"
   }
 };
 
