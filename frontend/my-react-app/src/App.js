@@ -14,10 +14,11 @@ import CalendarView from "./components/CalendarView"; // Directly using Calendar
 import AppointmentDetail from "./pages/AppointmentDetail"; // New: AppointmentDetail from components
 import { NotificationProvider } from "./context/NotificationContext";
 import { SimpleLanguageProvider } from "./context/SimpleLanguageContext";
-import { IconButton } from "@mui/material";
+import { IconButton, Box } from "@mui/material";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import AppointmentPage from "./pages/AppointmentDetail";
+import ChatBubble from "./components/ChatBubble"; // Persistent ChatBubble
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ element }) => {
@@ -90,10 +91,14 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/appointments/:id" element={<PrivateRoute element={<AppointmentPage />} />} />
           </Routes>
-          {/* Dark Mode Toggle Button */}
+          {/* Render the persistent ChatBubble */}
+          <Box sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1300 }}>
+            <ChatBubble />
+          </Box>
+          {/* Dark Mode Toggle Button repositioned to bottom-left */}
           <IconButton
             onClick={toggleDarkMode}
-            sx={{ position: "fixed", bottom: 16, right: 16 }}
+            sx={{ position: "fixed", bottom: 16, left: 16, zIndex: 1400 }}
             color="inherit"
           >
             {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
