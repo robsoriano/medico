@@ -8,7 +8,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate  
 import re
 from datetime import timedelta, datetime
-from models import db, User, Patient, Appointment, PatientRecord  # Make sure Appointment and PatientRecord are imported
+from models import db, User, Patient, Appointment, PatientRecord, Message  # Make sure Appointment and PatientRecord are imported
 
 app = Flask(__name__)
 
@@ -491,9 +491,18 @@ def send_message():
         return jsonify({'error': 'Missing required fields: recipient_id, content'}), 400
     
     try:
-        sender_id = get_jwt_identity()  # Assuming the JWT identity is the user ID
+        username = get_jwt_identity()
+        current_user = User.query.filter_by(username=username).first()
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Debug print to log IDs and content
+        print("Sending message from user id:", current_user.id)
+        print("Recipient id:", data['recipient_id'])
+        print("Content:", data['content'])
+
         new_message = Message(
-            sender_id=sender_id,
+            sender_id=current_user.id,
             recipient_id=data['recipient_id'],
             content=data['content'].strip()
         )
@@ -506,21 +515,29 @@ def send_message():
         }), 201
     except Exception as e:
         db.session.rollback()
+        print("Error sending message:", str(e))
         return jsonify({'error': str(e)}), 500
+
+
 
 @app.route('/api/messages', methods=['GET'])
 @jwt_required()
 def get_messages():
-    current_user = get_jwt_identity()
-    # Expect a query parameter 'user_id' representing the conversation partner
+    # Get the current user based on JWT identity (username)
+    username = get_jwt_identity()
+    current_user = User.query.filter_by(username=username).first()
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+
+    # Expect a query parameter 'user_id' representing the conversation partner (numeric ID)
     partner_id = request.args.get('user_id', type=int)
     if not partner_id:
         return jsonify({'error': 'Missing required query parameter: user_id'}), 400
     
     try:
         messages = Message.query.filter(
-            ((Message.sender_id == current_user) & (Message.recipient_id == partner_id)) |
-            ((Message.sender_id == partner_id) & (Message.recipient_id == current_user))
+            ((Message.sender_id == current_user.id) & (Message.recipient_id == partner_id)) |
+            ((Message.sender_id == partner_id) & (Message.recipient_id == current_user.id))
         ).order_by(Message.created_at.asc()).all()
         message_list = [{
             'id': m.id,
@@ -533,6 +550,7 @@ def get_messages():
         return jsonify(message_list), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/messages/<int:message_id>', methods=['PUT'])
 @jwt_required()
@@ -551,6 +569,31 @@ def mark_message_read(message_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/users/conversation-partners', methods=['GET'])
+@jwt_required()
+def get_conversation_partners():
+    current_username = get_jwt_identity()
+    current_user = User.query.filter_by(username=current_username).first()
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+
+    # Filter conversation partners based on the current user's role.
+    if current_user.role == 'doctor':
+        partners = User.query.filter(User.role == 'secretary').all()
+    elif current_user.role == 'secretary':
+        partners = User.query.filter(User.role == 'doctor').all()
+    else:
+        partners = []  # For any other roles, you might allow all or none
+
+    partner_list = [{
+        'id': user.id,
+        'username': user.username,
+        'role': user.role
+    } for user in partners]
+
+    return jsonify(partner_list), 200
+
 
 
 # A simple home route

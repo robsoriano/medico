@@ -1,11 +1,32 @@
+// src/services/messagingService.js
 import API from './api';
 
-export const getMessages = (partnerId) => {
-  // Retrieves all messages between the current user and the conversation partner
-  return API.get(`/api/messages?user_id=${partnerId}`);
+export const getMessages = async (partnerId) => {
+  try {
+    const response = await API.get(`/messages?user_id=${partnerId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    throw error;
+  }
 };
 
-export const sendMessage = (partnerId, content) => {
-  // Sends a new message to the conversation partner
-  return API.post('/api/messages', { recipient_id: partnerId, content });
+export const sendMessage = async (partnerId, content) => {
+  try {
+    const response = await API.post('/messages', { recipient_id: partnerId, content });
+    return response.data;
+  } catch (error) {
+    console.error('Error sending message:', error);
+    throw error;
+  }
+};
+
+export const getConversationPartners = async () => {
+  try {
+    const response = await API.get('/users/conversation-partners');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching conversation partners:', error);
+    throw error;
+  }
 };
