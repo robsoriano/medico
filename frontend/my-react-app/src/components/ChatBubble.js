@@ -20,7 +20,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import { getMessages, sendMessage, getConversationPartners } from '../services/messagingService';
-import { getUserRole, getUserId } from '../services/tokenService';
+import { getUserId } from '../services/tokenService';
 
 const ChatBubble = () => {
   const [open, setOpen] = useState(false);
@@ -30,10 +30,9 @@ const ChatBubble = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const userRole = getUserRole();
   const userId = getUserId();
 
-  // When the chat bubble is opened, fetch the conversation partners list
+  // Fetch conversation partners when chat is opened
   useEffect(() => {
     if (open) {
       const fetchPartners = async () => {
@@ -65,7 +64,7 @@ const ChatBubble = () => {
     setLoading(false);
   };
 
-  // Fetch messages when the chat is opened or partner changes
+  // Fetch messages when chat is opened or partner changes
   useEffect(() => {
     if (open && partnerId) {
       fetchMessages();
@@ -76,9 +75,7 @@ const ChatBubble = () => {
   useEffect(() => {
     let interval;
     if (open && partnerId) {
-      interval = setInterval(() => {
-        fetchMessages();
-      }, 10000); // 10 seconds
+      interval = setInterval(fetchMessages, 10000); // 10 seconds
     }
     return () => {
       if (interval) clearInterval(interval);
@@ -135,11 +132,17 @@ const ChatBubble = () => {
               label="Partner"
               onChange={handlePartnerChange}
             >
-              {conversationPartners.map((partner) => (
-                <MenuItem key={partner.id} value={partner.id}>
-                  {partner.username} ({partner.role})
+              {conversationPartners.length > 0 ? (
+                conversationPartners.map((partner) => (
+                  <MenuItem key={partner.id} value={partner.id}>
+                    {partner.username} ({partner.role})
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem value="" disabled>
+                  No available partners
                 </MenuItem>
-              ))}
+              )}
             </Select>
           </FormControl>
           <Divider />
@@ -147,7 +150,9 @@ const ChatBubble = () => {
             {loading ? (
               <Typography variant="body2">Loading messages...</Typography>
             ) : error ? (
-              <Typography variant="body2" color="error">{error}</Typography>
+              <Typography variant="body2" color="error">
+                {error}
+              </Typography>
             ) : messages.length > 0 ? (
               messages.map((msg, index) => (
                 <ListItem key={index} sx={{ justifyContent: msg.sender_id === userId ? 'flex-end' : 'flex-start' }}>
