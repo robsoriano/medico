@@ -1,5 +1,5 @@
 // src/components/ChatBubble.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Fab,
   Box,
@@ -31,6 +31,7 @@ const ChatBubble = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const userId = getUserId();
+  const messageInputRef = useRef(null);
 
   // Fetch conversation partners when chat is opened
   useEffect(() => {
@@ -47,6 +48,10 @@ const ChatBubble = () => {
         }
       };
       fetchPartners();
+      // Focus the input when chat opens
+      setTimeout(() => {
+        messageInputRef.current?.focus();
+      }, 100);
     }
   }, [open, partnerId]);
 
@@ -71,11 +76,11 @@ const ChatBubble = () => {
     }
   }, [open, partnerId]);
 
-  // Set up auto-refresh to poll for new messages every 10 seconds
+  // Auto-refresh to poll for new messages every 10 seconds
   useEffect(() => {
     let interval;
     if (open && partnerId) {
-      interval = setInterval(fetchMessages, 10000); // 10 seconds
+      interval = setInterval(fetchMessages, 10000);
     }
     return () => {
       if (interval) clearInterval(interval);
@@ -88,6 +93,8 @@ const ChatBubble = () => {
       await sendMessage(partnerId, newMessage);
       setNewMessage('');
       fetchMessages();
+      // Re-focus the input after sending a message
+      messageInputRef.current?.focus();
     } catch (err) {
       setError('Failed to send message.');
     }
@@ -180,6 +187,7 @@ const ChatBubble = () => {
               fullWidth
               variant="outlined"
               size="small"
+              inputRef={messageInputRef}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
