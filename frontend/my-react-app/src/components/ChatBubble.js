@@ -32,8 +32,9 @@ const ChatBubble = () => {
   const [error, setError] = useState('');
   const userId = getUserId();
   const messageInputRef = useRef(null);
+  const messageListRef = useRef(null);
 
-  // Fetch conversation partners when chat is opened
+  // Focus the input and fetch conversation partners when chat is opened
   useEffect(() => {
     if (open) {
       const fetchPartners = async () => {
@@ -69,7 +70,7 @@ const ChatBubble = () => {
     setLoading(false);
   };
 
-  // Fetch messages when chat is opened or partner changes
+  // Fetch messages when chat is open or partner changes
   useEffect(() => {
     if (open && partnerId) {
       fetchMessages();
@@ -86,6 +87,13 @@ const ChatBubble = () => {
       if (interval) clearInterval(interval);
     };
   }, [open, partnerId]);
+
+  // Auto-scroll to bottom when messages update
+  useEffect(() => {
+    if (messageListRef.current) {
+      messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !partnerId) return;
@@ -153,7 +161,7 @@ const ChatBubble = () => {
             </Select>
           </FormControl>
           <Divider />
-          <List sx={{ flexGrow: 1, overflowY: 'auto' }}>
+          <List sx={{ flexGrow: 1, overflowY: 'auto' }} ref={messageListRef}>
             {loading ? (
               <Typography variant="body2">Loading messages...</Typography>
             ) : error ? (
