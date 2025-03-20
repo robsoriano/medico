@@ -199,6 +199,12 @@ const ChatBubble = () => {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
             />
             <IconButton color="primary" onClick={handleSendMessage}>
               <SendIcon />
