@@ -30,3 +30,13 @@ export const getConversationPartners = async () => {
     throw error;
   }
 };
+
+export const markMessageAsRead = async (messageId) => {
+  try {
+    const response = await API.put(`/messages/${messageId}`, { read: true });
+    return response.data;
+  } catch (error) {
+    console.error('Error marking message as read:', error);
+    throw error;
+  }
+};

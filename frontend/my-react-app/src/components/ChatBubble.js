@@ -9,7 +9,6 @@ import {
   Typography,
   List,
   ListItem,
-  ListItemText,
   Divider,
   FormControl,
   InputLabel,
@@ -19,7 +18,7 @@ import {
 import ChatIcon from '@mui/icons-material/Chat';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
-import { getMessages, sendMessage, getConversationPartners } from '../services/messagingService';
+import { getMessages, sendMessage, getConversationPartners, markMessageAsRead } from '../services/messagingService';
 import { getUserId } from '../services/tokenService';
 
 const ChatBubble = () => {
@@ -94,6 +93,17 @@ const ChatBubble = () => {
       messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Auto-mark partner messages as read when loaded
+  useEffect(() => {
+    messages.forEach((msg) => {
+      if (msg.sender_id === partnerId && !msg.read) {
+        markMessageAsRead(msg.id).catch((err) =>
+          console.error('Error marking message as read:', err)
+        );
+      }
+    });
+  }, [messages, partnerId]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !partnerId) return;
@@ -178,10 +188,13 @@ const ChatBubble = () => {
                       color: msg.sender_id === userId ? '#fff' : '#000'
                     }}
                   >
-                    <ListItemText
-                      primary={msg.content}
-                      secondary={new Date(msg.created_at).toLocaleTimeString()}
-                    />
+                    <Typography variant="body2">{msg.content}</Typography>
+                    <Typography variant="caption" sx={{ display: 'block', textAlign: msg.sender_id === userId ? 'right' : 'left', mt: 0.5 }}>
+                      {msg.sender_id === userId ? (msg.read ? 'Read' : 'Sent') : (msg.read ? 'Delivered' : 'New')}
+                    </Typography>
+                    <Typography variant="caption" sx={{ display: 'block', textAlign: 'right' }}>
+                      {new Date(msg.created_at).toLocaleTimeString()}
+                    </Typography>
                   </Paper>
                 </ListItem>
               ))
