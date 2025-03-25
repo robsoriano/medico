@@ -91,10 +91,12 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/appointments/:id" element={<PrivateRoute element={<AppointmentPage />} />} />
           </Routes>
-          {/* Render the persistent ChatBubble */}
-          <Box sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1300 }}>
-            <ChatBubble />
-          </Box>
+          {/* Render ChatBubble only if the user is authenticated */}
+          {getAuthToken() && (
+            <Box sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1300 }}>
+              <ChatBubble />
+            </Box>
+          )}
           {/* Dark Mode Toggle Button repositioned to bottom-left */}
           <IconButton
             onClick={toggleDarkMode}
