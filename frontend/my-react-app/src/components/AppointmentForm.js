@@ -6,8 +6,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useNotification } from '../context/NotificationContext';
 import { getPatients } from '../services/patientService';
 
-const AppointmentForm = ({ onSubmit }) => {
-  const [selectedPatient, setSelectedPatient] = useState(null);
+const AppointmentForm = ({ onSubmit, defaultPatient = null }) => {
+  const [selectedPatient, setSelectedPatient] = useState(defaultPatient);
   const [patients, setPatients] = useState([]);
   const [appointmentDate, setAppointmentDate] = useState(null);
   const [appointmentTime, setAppointmentTime] = useState(null);
@@ -15,18 +15,20 @@ const AppointmentForm = ({ onSubmit }) => {
   const [error, setError] = useState('');
   const { showNotification } = useNotification();
 
-  // Fetch patients on component mount
+  // Fetch patients only if no defaultPatient is provided (for standalone usage)
   useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const response = await getPatients();
-        setPatients(response.data);
-      } catch (err) {
-        console.error('Failed to fetch patients:', err);
-      }
-    };
-    fetchPatients();
-  }, []);
+    if (!defaultPatient) {
+      const fetchPatients = async () => {
+        try {
+          const response = await getPatients();
+          setPatients(response.data);
+        } catch (err) {
+          console.error('Failed to fetch patients:', err);
+        }
+      };
+      fetchPatients();
+    }
+  }, [defaultPatient]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -50,8 +52,8 @@ const AppointmentForm = ({ onSubmit }) => {
     try {
       onSubmit(payload);
       showNotification('Appointment added successfully!', 'success');
-      // Reset form state
-      setSelectedPatient(null);
+      // Reset form state; if defaultPatient exists, keep it
+      setSelectedPatient(defaultPatient);
       setAppointmentDate(null);
       setAppointmentTime(null);
       setDoctor('');
@@ -70,15 +72,18 @@ const AppointmentForm = ({ onSubmit }) => {
       </Typography>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Autocomplete
-            options={patients}
-            getOptionLabel={(option) => `${option.first_name} ${option.last_name} (ID: ${option.id})`}
-            onChange={(event, value) => setSelectedPatient(value)}
-            value={selectedPatient}
-            renderInput={(params) => (
-              <TextField {...params} label="Patient" fullWidth margin="normal" required />
-            )}
-          />
+          {/* Render the Autocomplete only if defaultPatient is not provided */}
+          {!defaultPatient && (
+            <Autocomplete
+              options={patients}
+              getOptionLabel={(option) => `${option.first_name} ${option.last_name} (ID: ${option.id})`}
+              onChange={(event, value) => setSelectedPatient(value)}
+              value={selectedPatient}
+              renderInput={(params) => (
+                <TextField {...params} label="Patient" fullWidth margin="normal" required />
+              )}
+            />
+          )}
           <DatePicker
             label="Appointment Date"
             value={appointmentDate}

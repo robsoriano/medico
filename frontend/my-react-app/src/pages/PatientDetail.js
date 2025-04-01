@@ -1,10 +1,24 @@
 // src/pages/PatientDetail.js
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Container, Typography, Paper, Button, Box } from "@mui/material";
+import { Container, Typography, Paper, Button, Box, Modal } from "@mui/material";
 import { getPatient } from "../services/patientService";
+import { addAppointment } from "../services/appointmentService";
 import PatientRecords from "../components/PatientRecords";
+import AppointmentForm from "../components/AppointmentForm";
+import UpcomingAppointments from "../components/UpcomingAppointments";
 import { useSimpleLanguage } from "../context/SimpleLanguageContext";
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  boxShadow: 24,
+  p: 4,
+};
 
 const PatientDetail = () => {
   const { id } = useParams();
@@ -13,6 +27,7 @@ const PatientDetail = () => {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showAppointmentForm, setShowAppointmentForm] = useState(false);
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -29,6 +44,18 @@ const PatientDetail = () => {
 
     fetchPatient();
   }, [id, t]);
+
+  const handleAppointmentSubmit = async (appointmentData) => {
+    try {
+      await addAppointment(appointmentData);
+      console.log("Appointment successfully added");
+      setShowAppointmentForm(false);
+      // Optionally, refresh appointments data here if needed.
+    } catch (error) {
+      console.error("Error adding appointment:", error);
+      // Optionally, display an error notification.
+    }
+  };
 
   if (loading) return <Typography>{t("loadingPatient") || "Loading patient details..."}</Typography>;
   if (error) return <Typography color="error">{error}</Typography>;
@@ -71,6 +98,9 @@ const PatientDetail = () => {
           <Button variant="outlined" onClick={() => navigate(`/patients/${id}/edit`)} sx={{ ml: 2 }}>
             {t("editPatient") || "Edit Patient"}
           </Button>
+          <Button variant="contained" onClick={() => setShowAppointmentForm(true)} sx={{ ml: 2 }}>
+            {t("scheduleAppointment") || "Schedule Appointment"}
+          </Button>
         </Box>
       </Paper>
 
@@ -78,9 +108,27 @@ const PatientDetail = () => {
       <Box sx={{ mt: 4 }}>
         <PatientRecords patientId={id} />
       </Box>
+
+      {/* Upcoming Appointments Section */}
+      <Box sx={{ mt: 4 }}>
+        <UpcomingAppointments patientId={patient.id} />
+      </Box>
+
+      {/* Modal for scheduling appointment */}
+      <Modal
+        open={showAppointmentForm}
+        onClose={() => setShowAppointmentForm(false)}
+        aria-labelledby="schedule-appointment-modal"
+      >
+        <Box sx={modalStyle}>
+          <Typography id="schedule-appointment-modal" variant="h6" gutterBottom>
+            {t("scheduleAppointment")} - {patient.first_name} {patient.last_name}
+          </Typography>
+          <AppointmentForm onSubmit={handleAppointmentSubmit} defaultPatient={patient} />
+        </Box>
+      </Modal>
     </Container>
   );
 };
 
 export default PatientDetail;
-
