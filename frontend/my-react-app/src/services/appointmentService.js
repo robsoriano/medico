@@ -11,5 +11,6 @@ export const addAppointment = (appointmentData) => {
 
 export const getAppointment = (id) => API.get(`/appointments/${id}`);
 
-
-// You can later add update and delete functions as needed
+export const deleteAppointment = (id) => {
+  return API.delete(`/appointments/${id}`);
+};

@@ -1,6 +1,7 @@
 // src/components/UpcomingAppointments.js
 import React, { useState, useEffect } from 'react';
 import { Typography, Paper, Box } from '@mui/material';
+import { Link } from 'react-router-dom';
 import { getAppointments } from '../services/appointmentService';
 
 const UpcomingAppointments = ({ patientId }) => {
@@ -38,17 +39,23 @@ const UpcomingAppointments = ({ patientId }) => {
     <Paper sx={{ p: 2, mt: 2 }}>
       <Typography variant="h6">Upcoming Appointments</Typography>
       {appointments.map((appt) => (
-        <Box key={appt.id} sx={{ mt: 1, mb: 1, borderBottom: '1px solid #ccc', pb: 1 }}>
-          <Typography variant="body2">
-            <strong>Date:</strong> {appt.appointment_date}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Time:</strong> {appt.appointment_time}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Doctor:</strong> {appt.doctor}
-          </Typography>
-        </Box>
+        <Link 
+          key={appt.id} 
+          to={`/appointments/${appt.id}`}
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+          <Box sx={{ mt: 1, mb: 1, borderBottom: '1px solid #ccc', pb: 1, cursor: 'pointer' }}>
+            <Typography variant="body2">
+              <strong>Date:</strong> {appt.appointment_date}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Time:</strong> {appt.appointment_time}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Doctor:</strong> {appt.doctor}
+            </Typography>
+          </Box>
+        </Link>
       ))}
     </Paper>
   );
