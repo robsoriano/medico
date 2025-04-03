@@ -120,15 +120,18 @@ const PatientDetail = () => {
         <Typography variant="body1">
           <strong>{t("medicalInsurance")}:</strong> {patient.medical_insurance || "N/A"}
         </Typography>
-        <Box sx={{ mt: 2 }}>
+        <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
           <Button variant="contained" onClick={() => navigate("/patients")}>
             {t("backToPatientList") || "Back to Patient List"}
           </Button>
-          <Button variant="outlined" onClick={() => navigate(`/patients/${id}/edit`)} sx={{ ml: 2 }}>
+          <Button variant="contained" onClick={() => navigate(`/patients/${id}/edit`)}>
             {t("editPatient") || "Edit Patient"}
           </Button>
-          <Button variant="contained" onClick={() => setShowAppointmentForm(true)} sx={{ ml: 2 }}>
+          <Button variant="contained" onClick={() => setShowAppointmentForm(true)}>
             {t("scheduleAppointment") || "Schedule Appointment"}
+          </Button>
+          <Button variant="contained" onClick={() => navigate("/dashboard")}>
+            {t("backToDashboard") || "Back to Dashboard"}
           </Button>
         </Box>
       </Paper>
