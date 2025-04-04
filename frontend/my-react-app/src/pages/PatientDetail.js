@@ -1,13 +1,38 @@
 // src/pages/PatientDetail.js
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Container, Typography, Paper, Button, Box, Modal } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Paper,
+  Button,
+  Box,
+  Modal,
+  Tabs,
+  Tab
+} from "@mui/material";
 import { getPatient } from "../services/patientService";
 import { addAppointment } from "../services/appointmentService";
 import PatientRecords from "../components/PatientRecords";
 import AppointmentForm from "../components/AppointmentForm";
 import UpcomingAppointments from "../components/UpcomingAppointments";
 import { useSimpleLanguage } from "../context/SimpleLanguageContext";
+
+// Helper component for Tab panels
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`patient-detail-tabpanel-${index}`}
+      aria-labelledby={`patient-detail-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
+    </div>
+  );
+}
 
 const modalStyle = {
   position: 'absolute',
@@ -28,6 +53,7 @@ const PatientDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -50,11 +76,14 @@ const PatientDetail = () => {
       await addAppointment(appointmentData);
       console.log("Appointment successfully added");
       setShowAppointmentForm(false);
-      // Optionally, refresh appointments data here if needed.
+      // Optionally, refresh data here.
     } catch (error) {
       console.error("Error adding appointment:", error);
-      // Optionally, display an error notification.
     }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
   if (loading) return <Typography>{t("loadingPatient") || "Loading patient details..."}</Typography>;
@@ -104,14 +133,18 @@ const PatientDetail = () => {
         </Box>
       </Paper>
 
-      {/* Patient Records Section */}
+      {/* Tabs for Records and Appointments */}
       <Box sx={{ mt: 4 }}>
-        <PatientRecords patientId={id} />
-      </Box>
-
-      {/* Upcoming Appointments Section */}
-      <Box sx={{ mt: 4 }}>
-        <UpcomingAppointments patientId={patient.id} />
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="Patient details tabs">
+          <Tab label={t("patientRecords") || "Patient Records"} id="patient-detail-tab-0" />
+          <Tab label={t("upcomingAppointments") || "Upcoming Appointments"} id="patient-detail-tab-1" />
+        </Tabs>
+        <TabPanel value={tabValue} index={0}>
+          <PatientRecords patientId={id} />
+        </TabPanel>
+        <TabPanel value={tabValue} index={1}>
+          <UpcomingAppointments patientId={patient.id} />
+        </TabPanel>
       </Box>
 
       {/* Modal for scheduling appointment */}
