@@ -63,7 +63,14 @@ const translations = {
     you: "You",
     partner: "Partner",
     appointmentDetails: "Appointment Details",
-    back: "Back"
+    back: "Back",
+
+    // Additional keys for patient details and scheduling:
+    scheduleAppointment: "Schedule Appointment",
+    upcomingAppointments: "Upcoming Appointments",
+    failedToLoadPatient: "Failed to load patient details.",
+    loadingPatient: "Loading patient details...",
+    patientNotFound: "Patient not found."
   },
   es: {
     welcome: "Bienvenido",
@@ -127,7 +134,14 @@ const translations = {
     you: "Tú",
     partner: "Compañero",
     appointmentDetails: "Detalles de la Cita",
-    back: "Volver"
+    back: "Volver",
+
+    // Additional keys for patient details and scheduling:
+    scheduleAppointment: "Agendar Cita",
+    upcomingAppointments: "Próximas Citas",
+    failedToLoadPatient: "Error al cargar los detalles del paciente.",
+    loadingPatient: "Cargando detalles del paciente...",
+    patientNotFound: "Paciente no encontrado."
   }
 };
 
